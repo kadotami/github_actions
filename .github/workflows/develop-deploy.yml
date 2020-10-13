@@ -50,6 +50,8 @@ jobs:
       matrix:
         image:
           - ruby:2.5
+    steps:
+      - run: echo 'rspec!'
 
   deploy:
     needs: [linter, rspec]
