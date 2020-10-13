@@ -6,20 +6,19 @@ on:
       - hotfix/*
   
 jobs:
-  build:
+  linter:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        ruby: [ '2.5.x' ]
+        image:
+          - ruby:2.5
 
     steps:
       - uses: actions/checkout@v1
 
-      - name: Set up Ruby version
-        uses: actions/setup-ruby@master
-        with:
-          ruby-version : ${{ matrix.ruby }}
+      - name: Set up ruby
+        uses: docker://${{ matrix.image }}
 
       - name: apt-get
         run: |
@@ -42,3 +41,18 @@ jobs:
 
       - name: Rubocop checks
         run: bundle exec rubocop --parallel
+
+  rspec:
+    needs: linter
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        image:
+          - ruby:2.5
+
+  deploy:
+    needs: [linter, rspec]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'deploy!'
