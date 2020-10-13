@@ -42,6 +42,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gem-
 
+      - name: bundle install
+        run: bundle install
+
+      - name: enable problem matcher
+        run: |
+          echo "::add-matcher::.github/annotations/rubocop.json"
+
       - name: Cache rubocop
         uses: actions/cache@v1
         with:
@@ -51,14 +58,7 @@ jobs:
             ${{ runner.os }}-rubocop-
             ${{ runner.os }}-rubocop-${{ github.base_ref }}
             ${{ runner.os }}-rubocop-${{ hashFiles('**/.rubocop.yml') }}
-
-      - name: bundle install
-        run: bundle install
-
-      - name: enable problem matcher
-        run: |
-          echo "::add-matcher::.github/annotations/rubocop.json"
-
+  
       - name: Rubocop checks
         run: bundle exec rubocop --parallel
 
