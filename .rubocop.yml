@@ -46,7 +46,3 @@ Style/Documentation:
   Enabled: false
 Style/AsciiComments:
   Enabled: false
-Rails/HttpPositionalArguments:
-  Exclude:
-    - 'spec/api/alerts_spec.rb'
-    - 'spec/api/notifications_spec.rb'
