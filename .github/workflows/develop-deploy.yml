@@ -16,47 +16,51 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Rubocop Linter Action
-        uses: andrewmcodes/rubocop-linter-action@v3.3.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Rubocop Linter Action
+      #   uses: andrewmcodes/rubocop-linter-action@v3.3.0
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Set up Ruby version
-      #   uses: actions/setup-ruby@master
-      #   with:
-      #     ruby-version : ${{ matrix.ruby }}
+      - name: Set up Ruby version
+        uses: actions/setup-ruby@master
+        with:
+          ruby-version : ${{ matrix.ruby }}
 
-      # - name: apt-get
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install libmysqlclient-dev
+      - name: apt-get
+        run: |
+          sudo apt-get update
+          sudo apt-get install libmysqlclient-dev
 
-      # - name: Set up bundler
-      #   run: gem install bundler
+      - name: Set up bundler
+        run: gem install bundler
 
-      # - name: Cache gems
-      #   uses: actions/cache@v1
-      #   with:
-      #     path: vendor/bundle
-      #     key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-gem-
+      - name: Cache gems
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gem-
 
-      # - name: Cache rubocop
-      #   uses: actions/cache@v1
-      #   with:
-      #     path: ~/.cache/rubocop_cache
-      #     key: ${{ runner.os }}-rubocop-${{ github.head_ref }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-rubocop-
-      #       ${{ runner.os }}-rubocop-${{ github.base_ref }}
-      #       ${{ runner.os }}-rubocop-${{ hashFiles('**/.rubocop.yml') }}
+      - name: Cache rubocop
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/rubocop_cache
+          key: ${{ runner.os }}-rubocop-${{ github.head_ref }}
+          restore-keys: |
+            ${{ runner.os }}-rubocop-
+            ${{ runner.os }}-rubocop-${{ github.base_ref }}
+            ${{ runner.os }}-rubocop-${{ hashFiles('**/.rubocop.yml') }}
 
-      # - name: bundle install
-      #   run: bundle install
+      - name: bundle install
+        run: bundle install
 
-      # - name: Rubocop checks
-      #   run: bundle exec rubocop --parallel
+      - name: enable problem matcher
+        run: |
+          echo "::add-matcher::.github/annotations/rubocop.json"
+
+      - name: Rubocop checks
+        run: bundle exec rubocop --parallel
 
   rspec:
     needs: linter
