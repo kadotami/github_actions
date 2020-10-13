@@ -1,0 +1,52 @@
+AllCops:
+  TargetRubyVersion: 2.5
+  Exclude:
+    - db/schema.rb
+    - db/migrate/*
+    - bin/*
+    - vendor/**/*
+Rails:
+  Enabled: true
+BlockNesting:
+  Max: 5
+LineLength:
+  Enabled: false
+Metrics/CyclomaticComplexity:
+  Max: 20
+Metrics/PerceivedComplexity:
+  Max: 20
+Metrics/AbcSize:
+  Max: 100
+Metrics/MethodLength:
+  CountComments: false
+  Max: 30
+Metrics/ClassLength:
+  CountComments: false
+  Max: 1000
+Metrics/ParameterLists:
+  Max: 7
+  CountKeywordArgs: true
+Metrics/ModuleLength:
+  Exclude:
+    - 'app/mappers/**/*.rb'
+    - 'spec/**/*_spec.rb'
+    - 'lib/tasks/*.rake'
+Metrics/BlockLength:
+  Exclude:
+    - 'app/mappers/**/*.rb'
+    - 'spec/**/*_spec.rb'
+    - 'lib/tasks/*.rake'
+Layout/MultilineBlockLayout:
+  Enabled: true
+Layout/EmptyLineAfterMagicComment:
+  Enabled: false
+Style/BlockDelimiters:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/AsciiComments:
+  Enabled: false
+Rails/HttpPositionalArguments:
+  Exclude:
+    - 'spec/api/alerts_spec.rb'
+    - 'spec/api/notifications_spec.rb'
