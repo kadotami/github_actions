@@ -58,6 +58,26 @@ jobs:
     steps:
       - run: echo 'rspec!'
 
+  e2e_survey:
+    needs: linter
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: [ '10' ]
+    steps:
+      - run: echo 'e2e_survey!'
+
+  e2e_dashboard:
+    needs: linter
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: [ '10' ]
+    steps:
+      - run: echo 'e2e_dashboard!'
+
   build:
     needs: [rspec, e2e_survey, e2e_dashboard]
     runs-on: ubuntu-latest
