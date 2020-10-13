@@ -16,6 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
+      - name: Rubocop Linter Action
+        uses: andrewmcodes/rubocop-linter-action@v3.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Ruby version
         uses: actions/setup-ruby@master
         with:
@@ -53,8 +58,14 @@ jobs:
     steps:
       - run: echo 'rspec!'
 
+  build:
+    needs: [rspec, e2e_survey, e2e_dashboard]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'deploy!'
+
   deploy:
-    needs: [linter, rspec]
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - run: echo 'deploy!'
