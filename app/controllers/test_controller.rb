@@ -13,4 +13,10 @@ class TestController < ApplicationControler
     a = '1'
     a
   end
+
+  def delete
+    test =1
+    a={a:n, b:c}
+    test
+  end
 end

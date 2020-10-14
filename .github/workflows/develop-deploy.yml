@@ -85,7 +85,7 @@ jobs:
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"*${{ steps.annotate_rubocop.outputs.rubocop-message}}*\"
+                        \"text\":\"*Rubocop: ${{ steps.annotate_rubocop.outputs.rubocop-message}}*\"
                       }
                     },
                     {
