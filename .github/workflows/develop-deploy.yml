@@ -56,7 +56,12 @@ jobs:
       - name: Rubocop checks
         id: test
         run: | 
-          echo "::set-output name=rubocop_out::$(echo "aaaaaaassaanksanl")
+          output=$(bundle exec rubocop --parallel)
+          output="${output//'%'/'%25'}"
+          output="${output//$'\n'/'%0A'}"
+          output="${output//$'\r'/'%0D'}"
+          echo $output
+          echo "::set-output name=rubocop_out::$output
       
       - name: annotate Rubocop
         if: always()
