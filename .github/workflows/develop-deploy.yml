@@ -49,7 +49,6 @@ jobs:
             ${{ runner.os }}-rubocop-${{ hashFiles('**/.rubocop.yml') }}
   
       - name: Rubocop checks
-        id: run_rubocop
         run: | 
           bundle exec rubocop --parallel >> rubocop_out.txt
       
@@ -59,7 +58,6 @@ jobs:
           echo "::add-matcher::.github/annotations/rubocop.json"
   
       - name: annotate Rubocop
-        id: run_rubocop
         if: always()
         run: | 
           cat rubocop_out.txt
