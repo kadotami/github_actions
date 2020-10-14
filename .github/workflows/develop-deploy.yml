@@ -66,7 +66,7 @@ jobs:
 
       - name: echo
         if: always()
-        run: echo "${{ tail -n=1 rubocop_out.txt }}"
+        run: echo "$(tail -n=1 rubocop_out.txt)"
 
   rspec:
     needs: linter
