@@ -66,7 +66,7 @@ jobs:
         if: failure()
         uses: pullreminders/slack-action@master
         with:
-          args: |
+          args: >-
             {
               "channel":"CS9TN6R9S",
               "attachments":[
