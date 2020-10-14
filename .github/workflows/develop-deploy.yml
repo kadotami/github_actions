@@ -74,7 +74,21 @@ jobs:
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"${{ github.event.pull_request.title }}\"
+                        \"text\":\"PR Name: <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} @${{ github.event.pull_request.user.login }}>\"
+                      }
+                    },
+                    {
+                      \"type\":\"section\",
+                      \"text\":{
+                        \"type\":\"mrkdwn\",
+                        \"text\":\"${{ steps.annotate_rubocop.outputs.rubocop-message}}\"
+                      }
+                    },
+                    {
+                      \"type\":\"section\",
+                      \"text\":{
+                        \"type\":\"mrkdwn\",
+                        \"text\":\"${{ steps.annotate_rubocop.outputs.rubocop-log}}\"
                       }
                     }
                   ]
