@@ -92,14 +92,13 @@ jobs:
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"'''\n${{ steps.annotate_rubocop.outputs.rubocop-log}}\n'''\"
+                        \"text\":\"```\n${{ steps.annotate_rubocop.outputs.rubocop-log}}\n```\"
                       }
                     }
                   ]
                 }
               ]
             }
-          # args: '{\"channel\":\"CS9TN6R9S\",\"attachments\":[{\"color\":\"#F32013\",\"blocks\":[{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*PR Fail:* ${{ github.event.pull_request.title }}\n @${{ github.event.pull_request.user.login }}\"}  },{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"${{ steps.annotate_rubocop.outputs.rubocop-message}}\"}},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<${{ github.event.pull_request.html_url }}|View Pull Request>\"}}]}]}'
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
