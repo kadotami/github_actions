@@ -16,11 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      # - name: Rubocop Linter Action
-      #   uses: andrewmcodes/rubocop-linter-action@v3.3.0
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Set up Ruby version
         uses: actions/setup-ruby@master
         with:
@@ -60,7 +55,14 @@ jobs:
             ${{ runner.os }}-rubocop-${{ hashFiles('**/.rubocop.yml') }}
   
       - name: Rubocop checks
+        id: run_rubocop
         run: bundle exec rubocop --parallel
+
+      - name: Set RUBOCOP_ERROR
+        run: echo ::set-env name=RUBOCOP_ERROR::$(echo "${{ step.run_rubocop.output }}")
+
+      - name: echo
+        run: echo "$RUBOCOP_ERROR"
 
   rspec:
     needs: linter
