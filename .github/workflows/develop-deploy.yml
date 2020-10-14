@@ -54,14 +54,18 @@ jobs:
           bundle exec rubocop --parallel >> rubocop_out.txt
       
       - name: annotate Rubocop
-        if: always()
+        if: failure()
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
           cat rubocop_out.txt
 
-      - name: echo
-        if: always()
-        run: echo "$(tail -n 1 rubocop_out.txt)"
+      - name: send slack
+        if: failure()
+        uses: pullreminders/slack-action@v1
+        with:
+          args: '{\"channel\":\"CS9TN6R9S\", \"text\":\"test\"}'
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
   rspec:
     needs: linter
