@@ -56,13 +56,12 @@ jobs:
   
       - name: Rubocop checks
         id: run_rubocop
-        run: bundle exec rubocop --parallel
-
-      - name: Set RUBOCOP_ERROR
-        run: echo ::set-env name=RUBOCOP_ERROR::$(echo "${{ step.run_rubocop.output }}")
+        run: | 
+          bundle exec rubocop --parallel
+          echo "::set-output name=rubocop-output::$output"
 
       - name: echo
-        run: echo "$RUBOCOP_ERROR"
+        run: echo "${{ steps.run_rubocop.outputs.rubocop-output }}"
 
   rspec:
     needs: linter
