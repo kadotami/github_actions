@@ -56,7 +56,7 @@ jobs:
       - name: Rubocop checks
         id: test
         run: | 
-          echo "::set-output name=rubocop_out::$(bundle exec rubocop --parallel | sed s/$'\n'/\\\\n/g)
+          echo "::set-output name=rubocop_out::$(bundle exec rubocop --parallel | sed "s/$'\n'/\\\\n/g")
       
       - name: annotate Rubocop
         if: always()
