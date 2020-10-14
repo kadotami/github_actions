@@ -57,8 +57,8 @@ jobs:
       - name: Rubocop checks
         id: run_rubocop
         run: | 
-          bundle exec rubocop --parallel
-          echo "::set-output name=rubocop-output::$output"
+          echo "::set-output name=rubocop-output::$(bundle exec rubocop --parallel)"
+          echo "------------------------------------"
 
       - name: echo
         if: always()
