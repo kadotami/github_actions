@@ -92,7 +92,7 @@ jobs:
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"'''${{ steps.annotate_rubocop.outputs.rubocop-log}}'''\"
+                        \"text\":\"'''\n${{ steps.annotate_rubocop.outputs.rubocop-log}}\n'''\"
                       }
                     }
                   ]
