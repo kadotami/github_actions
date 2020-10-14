@@ -61,6 +61,7 @@ jobs:
           echo "::set-output name=rubocop-output::$output"
 
       - name: echo
+        if: always()
         run: echo "${{ steps.run_rubocop.outputs.rubocop-output }}"
 
   rspec:
