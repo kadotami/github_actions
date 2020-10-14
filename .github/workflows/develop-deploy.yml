@@ -8,11 +8,9 @@ on:
 jobs:
   linter:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         ruby: [ '2.5.x' ]
-
     steps:
       - uses: actions/checkout@v1
 
@@ -40,10 +38,6 @@ jobs:
       - name: bundle install
         run: bundle install
 
-      - name: enable problem matcher
-        run: |
-          echo "::add-matcher::.github/annotations/rubocop.json"
-
       - name: Cache rubocop
         uses: actions/cache@v1
         with:
@@ -58,14 +52,21 @@ jobs:
         id: run_rubocop
         run: | 
           bundle exec rubocop --parallel >> rubocop_out.txt
-      # - name: Rubocop checks
-      #   id: run_rubocop
-      #   run: | 
-      #     echo "::set-output name=rubocop-output::$(bundle exec rubocop --parallel)"
+      
+      - name: enable problem matcher
+        if: always()
+        run: |
+          echo "::add-matcher::.github/annotations/rubocop.json"
+  
+      - name: annotate Rubocop
+        id: run_rubocop
+        if: always()
+        run: | 
+          cat rubocop_out.txt
 
-      # - name: echo
-      #   if: always()
-      #   run: echo "${{ steps.run_rubocop.outputs.rubocop-output }}"
+      - name: echo
+        if: always()
+        run: echo "${{ tail -n=1 rubocop_out.txt }}"
 
   rspec:
     needs: linter
