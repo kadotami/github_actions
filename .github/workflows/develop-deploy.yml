@@ -56,7 +56,11 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
           echo "::set-output name=rubocop-message::$(tail -n 1 rubocop_out.txt)"
-          echo "::set-output name=rubocop-log::$(cat rubocop_out.txt)"
+          rubocoplog=$(cat rubocop_out.txt)
+          rubocoplog="${rubocoplog//'%'/'%25'}"
+          rubocoplog="${rubocoplog//$'\n'/'%0A'}"
+          rubocoplog="${rubocoplog//$'\r'/'%0D'}"
+          echo "::set-output name=rubocop-log::$rubocoplog"
           cat rubocop_out.txt
 
       - name: send slack
