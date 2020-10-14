@@ -57,12 +57,15 @@ jobs:
       - name: Rubocop checks
         id: run_rubocop
         run: | 
-          echo "::set-output name=rubocop-output::$(bundle exec rubocop --parallel)"
-          echo "------------------------------------"
+          bundle exec rubocop --parallel >> rubocop_out.txt
+      # - name: Rubocop checks
+      #   id: run_rubocop
+      #   run: | 
+      #     echo "::set-output name=rubocop-output::$(bundle exec rubocop --parallel)"
 
-      - name: echo
-        if: always()
-        run: echo "${{ steps.run_rubocop.outputs.rubocop-output }}"
+      # - name: echo
+      #   if: always()
+      #   run: echo "${{ steps.run_rubocop.outputs.rubocop-output }}"
 
   rspec:
     needs: linter
