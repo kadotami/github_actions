@@ -48,23 +48,24 @@ jobs:
             ${{ runner.os }}-rubocop-${{ github.base_ref }}
             ${{ runner.os }}-rubocop-${{ hashFiles('**/.rubocop.yml') }}
   
-      - name: Rubocop checks
-        run: | 
-          bundle exec rubocop --parallel >> rubocop_out.txt
-      
       - name: enable problem matcher
         if: always()
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
   
+      - name: Rubocop checks
+        id: test
+        run: | 
+          echo "::set-output name=rubocop_out::$(bundle exec rubocop --parallel | sed -e 's/$'\n'/\\\\n/g)'
+      
       - name: annotate Rubocop
         if: always()
         run: | 
-          cat rubocop_out.txt
+          echo ${{ steps.test.rubocop_out }}
 
-      - name: echo
-        if: always()
-        run: echo "$(tail -n=1 rubocop_out.txt)"
+      # - name: echo
+      #   if: always()
+      #   run: echo "$(tail -n 1 rubocop_out.txt)"
 
   rspec:
     needs: linter
