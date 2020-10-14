@@ -61,7 +61,7 @@ jobs:
 
       - name: send slack
         if: failure()
-        uses: pullreminders/slack-action@v1
+        uses: pullreminders/slack-action@master
         with:
           args: '{\"channel\":\"CS9TN6R9S\", \"text\":\"test\"}'
         env:
