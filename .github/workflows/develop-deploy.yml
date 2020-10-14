@@ -85,14 +85,14 @@ jobs:
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"${{ steps.annotate_rubocop.outputs.rubocop-message}}\"
+                        \"text\":\"*${{ steps.annotate_rubocop.outputs.rubocop-message}}*\"
                       }
                     },
                     {
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"${{ steps.annotate_rubocop.outputs.rubocop-log}}\"
+                        \"text\":\"'''${{ steps.annotate_rubocop.outputs.rubocop-log}}'''\"
                       }
                     }
                   ]
