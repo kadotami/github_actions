@@ -56,7 +56,9 @@ jobs:
       - name: Rubocop checks
         id: test
         run: | 
+          echo "test1"
           output=$(bundle exec rubocop --parallel)
+          echo "test2"
           output="${output//'%'/'%25'}"
           output="${output//$'\n'/'%0A'}"
           output="${output//$'\r'/'%0D'}"
