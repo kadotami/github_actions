@@ -56,7 +56,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
           echo "::set-output name=rubocop-message::$(tail -n 1 rubocop_out.txt)"
-          rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\\n```\\n & /g') | sed '0,/```\\n```\\n/s/```\\n```\\n//g'
+          rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') | sed '1,2d'
           rubocoplog="${rubocoplog//'%'/'%25'}"
           rubocoplog="${rubocoplog//$'\n'/'%0A'}"
           rubocoplog="${rubocoplog//$'\r'/'%0D'}"
