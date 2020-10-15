@@ -1,0 +1,59 @@
+Inspecting 32 files
+............W...................
+
+Offenses:
+
+app/controllers/test_controller.rb:3:9: C: Style/WordArray: Use %w or %W for an array of words.
+ a = ['a', 'b', 'c']
+ ^^^^^^^^^^^^^^^
+app/controllers/test_controller.rb:4:12: C: Layout/SpaceAfterComma: Space missing after comma.
+ b = [:x,:y]
+ ^
+app/controllers/test_controller.rb:5:5: W: Lint/UselessAssignment: Useless assignment to variable - c.
+ c = a+b
+ ^
+app/controllers/test_controller.rb:5:10: C: Layout/SpaceAroundOperators: Surrounding space missing for operator +.
+ c = a+b
+ ^
+app/controllers/test_controller.rb:8:3: C: Style/EmptyMethod: Put empty method definitions on a single line.
+ def create ...
+ ^^^^^^^^^^
+app/controllers/test_controller.rb:9:1: C: Layout/EmptyLinesAroundMethodBody: Extra empty line detected at method body beginning.
+app/controllers/test_controller.rb:11:3: C: Layout/EmptyLineBetweenDefs: Use empty lines between method definitions.
+ def edit 
+ ^^^
+app/controllers/test_controller.rb:11:11: C: Layout/TrailingWhitespace: Trailing whitespace detected.
+ def edit 
+ ^^^
+app/controllers/test_controller.rb:12:5: C: Layout/EmptyLineAfterGuardClause: Add empty line after guard clause.
+ return if true
+ ^^^^^^^^^^^^^^
+app/controllers/test_controller.rb:12:15: W: Lint/LiteralAsCondition: Literal true appeared as a condition.
+ return if true
+ ^^^^
+app/controllers/test_controller.rb:18:10: C: Layout/SpaceAroundOperators: Surrounding space missing for operator =.
+ test =1
+ ^
+app/controllers/test_controller.rb:19:5: W: Lint/UselessAssignment: Useless assignment to variable - a.
+ a={a:n, b:c}
+ ^
+app/controllers/test_controller.rb:19:6: C: Layout/SpaceAroundOperators: Surrounding space missing for operator =.
+ a={a:n, b:c}
+ ^
+app/controllers/test_controller.rb:19:7: C: Layout/SpaceInsideHashLiteralBraces: Space inside { missing.
+ a={a:n, b:c}
+ ^
+app/controllers/test_controller.rb:19:9: C: Layout/SpaceAfterColon: Space missing after colon.
+ a={a:12, b:c}
+ ^
+app/controllers/test_controller.rb:19:14: C: Layout/SpaceAfterColon: Space missing after colon.
+ a={a:n, b:c}
+ ^
+app/controllers/test_controller.rb:19:16: C: Layout/SpaceInsideHashLiteralBraces: Space inside } missing.
+ a={a:n, b:c}
+ ^
+app/controllers/test_controller.rb:22:4: C: Layout/TrailingBlankLines: Final newline missing.
+end
+ 
+
+32 files inspected, 18 offenses detected
