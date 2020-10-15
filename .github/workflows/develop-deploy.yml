@@ -3,23 +3,12 @@ on:
     types: [opened, synchronize]
   
 jobs:
-  linter:
+  rubocop:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        ruby: [ '2.5.x' ]
+    container:
+      image: ruby:2.5.3
     steps:
       - uses: actions/checkout@v1
-
-      - name: Set up Ruby version
-        uses: actions/setup-ruby@master
-        with:
-          ruby-version : ${{ matrix.ruby }}
-
-      - name: apt-get
-        run: |
-          sudo apt-get update
-          sudo apt-get install libmysqlclient-dev
 
       - name: Set up bundler
         run: gem install bundler
@@ -33,7 +22,7 @@ jobs:
             ${{ runner.os }}-gem-
 
       - name: bundle install
-        run: bundle install
+        run: bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
 
       - name: Cache rubocop
         uses: actions/cache@v1
@@ -44,7 +33,7 @@ jobs:
             ${{ runner.os }}-rubocop-
             ${{ runner.os }}-rubocop-${{ github.base_ref }}
             ${{ runner.os }}-rubocop-${{ hashFiles('**/.rubocop.yml') }}
-  
+
       - name: Rubocop checks
         id: run_rubocop
         run: | 
@@ -94,19 +83,56 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
-  rspec:
-    needs: linter
+  
+  eslint:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         ruby: [ '2.5.x' ]
     steps:
-      - run: echo 'rspec!'
+      - run: echo 'eslint!'
+
+  rspec:
+    needs: [rubocop, eslint]
+    runs-on: ubuntu-latest
+    container:
+      image: ruby:2.5.3
+
+    steps:
+      - uses: actions/checkout@v1
+      
+      - name: Set up bundler
+        run: gem install bundler
+
+      - name: Cache gems
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gem-
+
+      - name: bundle install
+        run: bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
+
+      - name: Setup Database
+        run: |
+          cp config/database.yml.ci config/database.yml
+          bundle exec rake db:create
+          bundle exec rake db:schema:load
+          bundle exec rake db:seed_fu
+        env:
+          RAILS_ENV: test
+
+      - name: run rspec
+        run: |
+          # bundle exec rake elasticsearch:research:info
+          bundle exec rspec spec --format progress
+
 
   e2e_survey:
-    needs: linter
+    needs: [rubocop, eslint]
     runs-on: ubuntu-latest
 
     strategy:
@@ -116,7 +142,7 @@ jobs:
       - run: echo 'e2e_survey!'
 
   e2e_dashboard:
-    needs: linter
+    needs: [rubocop, eslint]
     runs-on: ubuntu-latest
 
     strategy:
