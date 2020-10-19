@@ -62,7 +62,7 @@ jobs:
           rubocoplog="${rubocoplog//$'\n'/'%0A'}"
           rubocoplog="${rubocoplog//$'\r'/'%0D'}"
           echo "::set-output name=rubocop-log::$rubocoplog"
-          cat rubocop_out.txt
+          cat ${{ env.workdir }}/rubocop_out.txt
 
       - name: send slack
         if: failure()
