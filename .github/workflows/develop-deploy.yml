@@ -1,0 +1,173 @@
+on:
+  pull_request:
+    types: [opened, synchronize]
+  
+jobs:
+  rubocop:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: [ '2.5.x' ]
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Set up Ruby version
+        uses: actions/setup-ruby@master
+        with:
+          ruby-version : ${{ matrix.ruby }}
+
+      - name: Set up bundler
+        run: gem install bundler
+
+      - name: Cache gems
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gem-
+
+      - name: bundle install
+        run: bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
+
+      - name: Cache rubocop
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/rubocop_cache
+          key: ${{ runner.os }}-rubocop-${{ github.head_ref }}
+          restore-keys: |
+            ${{ runner.os }}-rubocop-
+            ${{ runner.os }}-rubocop-${{ github.base_ref }}
+            ${{ runner.os }}-rubocop-${{ hashFiles('**/.rubocop.yml') }}
+
+      - name: Rubocop checks
+        id: run_rubocop
+        run: | 
+          bundle exec rubocop --parallel >> rubocop_out.txt
+      
+      - name: annotate Rubocop
+        if: failure()
+        id: annotate_rubocop
+        run: |
+          echo "::add-matcher::.github/annotations/rubocop.json"
+          echo "::set-output name=rubocop-message::$(tail -n 1 rubocop_out.txt)"
+          rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g'| sed '1,2d') 
+          rubocoplog="${rubocoplog//'%'/'%25'}"
+          rubocoplog="${rubocoplog//$'\n'/'%0A'}"
+          rubocoplog="${rubocoplog//$'\r'/'%0D'}"
+          echo "::set-output name=rubocop-log::$rubocoplog"
+          cat rubocop_out.txt
+
+      - name: send slack
+        if: failure()
+        uses: pullreminders/slack-action@master
+        with:
+          args: |
+            {
+              \"channel\":\"CS9TN6R9S\",
+              \"attachments\": [
+                {
+                  \"color\":\"#F32013\",
+                  \"blocks\":[
+                    {
+                      \"type\":\"header\",
+                      \"text\":{
+                        \"type\":\"plain_text\",
+                        \"text\":\"Rubocop Issue Found!: ${{ steps.annotate_rubocop.outputs.rubocop-message}}\"
+                      }
+                    },
+                    {
+                      \"type\":\"section\",
+                      \"text\":{
+                        \"type\":\"mrkdwn\",
+                        \"text\":\"PR Name: <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} @${{ github.event.pull_request.user.login }}>\n```\n${{ steps.annotate_rubocop.outputs.rubocop-log}}\n```\"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+  
+  # eslint:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node: [ '10' ]
+  #   steps:
+  #     - run: echo 'eslint!'
+
+  # rspec:
+  #   needs: [rubocop, eslint]
+  #   runs-on: ubuntu-latest
+
+  #   strategy:
+  #     matrix:
+  #       ruby: [ '2.5.x' ]
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - name: Set up Ruby version
+  #       uses: actions/setup-ruby@master
+  #       with:
+  #         ruby-version : ${{ matrix.ruby }}
+
+  #     - name: Set up bundler
+  #       run: gem install bundler
+
+  #     - name: Cache gems
+  #       uses: actions/cache@v1
+  #       with:
+  #         path: vendor/bundle
+  #         key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-gem-
+
+  #     - name: bundle install
+  #       run: bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
+
+  #     - name: Setup Database
+  #       run: |
+  #         bundle exec rake db:create
+  #         bundle exec rake db:schema:load
+  #         bundle exec rake db:seed_fu
+  #       env:
+  #         RAILS_ENV: test
+
+  #     - name: run rspec
+  #       run: |
+  #         # bundle exec rake elasticsearch:research:info
+  #         bundle exec rspec spec --format progress
+
+
+  # e2e_survey:
+  #   needs: [rubocop, eslint]
+  #   runs-on: ubuntu-latest
+
+  #   strategy:
+  #     matrix:
+  #       node: [ '10' ]
+  #   steps:
+  #     - run: echo 'e2e_survey!'
+
+  # e2e_dashboard:
+  #   needs: [rubocop, eslint]
+  #   runs-on: ubuntu-latest
+
+  #   strategy:
+  #     matrix:
+  #       node: [ '10' ]
+  #   steps:
+  #     - run: echo 'e2e_dashboard!'
+
+  # build:
+  #   needs: [rspec, e2e_survey, e2e_dashboard]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - run: echo 'deploy!'
+
+  # deploy:
+  #   needs: [build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - run: echo 'deploy!'
