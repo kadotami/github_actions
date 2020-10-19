@@ -1,10 +1,14 @@
 on:
   pull_request:
     types: [opened, synchronize]
-  
+env:
+  TARGET_BRANCH: ${{ github.base_ref }}
+
 jobs:
   rubocop:
     runs-on: ubuntu-latest
+    env:
+      workdir: server
     strategy:
       matrix:
         ruby: [ '2.5.x' ]
@@ -22,12 +26,13 @@ jobs:
       - name: Cache gems
         uses: actions/cache@v1
         with:
-          path: vendor/bundle
+          path: ${{ env.workdir }}/vendor/bundle
           key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-gem-
 
       - name: bundle install
+        working-directory: ${{ env.workdir }}
         run: bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
 
       - name: Cache rubocop
@@ -42,6 +47,7 @@ jobs:
 
       - name: Rubocop checks
         id: run_rubocop
+        working-directory: ${{ env.workdir }}
         run: | 
           bundle exec rubocop --parallel >> rubocop_out.txt
       
@@ -50,8 +56,8 @@ jobs:
         id: annotate_rubocop
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
-          echo "::set-output name=rubocop-message::$(tail -n 1 rubocop_out.txt)"
-          rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g'| sed '1,2d') 
+          echo "::set-output name=rubocop-message::$(tail -n 1 ${{ env.workdir }}/rubocop_out.txt)"
+          rubocoplog=$(cat ${{ env.workdir }}/rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g'| sed '1,2d') 
           rubocoplog="${rubocoplog//'%'/'%25'}"
           rubocoplog="${rubocoplog//$'\n'/'%0A'}"
           rubocoplog="${rubocoplog//$'\r'/'%0D'}"
