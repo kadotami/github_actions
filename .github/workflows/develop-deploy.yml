@@ -90,86 +90,84 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
   
-  eslint:
-    runs-on: ubuntu-latest
+  # eslint:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node: [ '10' ]
+  #   steps:
+  #     - run: echo 'eslint!'
 
-    strategy:
-      matrix:
-        ruby: [ '2.5.x' ]
-    steps:
-      - run: echo 'eslint!'
+  # rspec:
+  #   needs: [rubocop, eslint]
+  #   runs-on: ubuntu-latest
 
-  rspec:
-    needs: [rubocop, eslint]
-    runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       ruby: [ '2.5.x' ]
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - name: Set up Ruby version
+  #       uses: actions/setup-ruby@master
+  #       with:
+  #         ruby-version : ${{ matrix.ruby }}
 
-    strategy:
-      matrix:
-        ruby: [ '2.5.x' ]
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up Ruby version
-        uses: actions/setup-ruby@master
-        with:
-          ruby-version : ${{ matrix.ruby }}
+  #     - name: Set up bundler
+  #       run: gem install bundler
 
-      - name: Set up bundler
-        run: gem install bundler
+  #     - name: Cache gems
+  #       uses: actions/cache@v1
+  #       with:
+  #         path: vendor/bundle
+  #         key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-gem-
 
-      - name: Cache gems
-        uses: actions/cache@v1
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gem-
+  #     - name: bundle install
+  #       run: bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
 
-      - name: bundle install
-        run: bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
+  #     - name: Setup Database
+  #       run: |
+  #         bundle exec rake db:create
+  #         bundle exec rake db:schema:load
+  #         bundle exec rake db:seed_fu
+  #       env:
+  #         RAILS_ENV: test
 
-      - name: Setup Database
-        run: |
-          cp config/database.yml.ci config/database.yml
-          bundle exec rake db:create
-          bundle exec rake db:schema:load
-          bundle exec rake db:seed_fu
-        env:
-          RAILS_ENV: test
-
-      - name: run rspec
-        run: |
-          # bundle exec rake elasticsearch:research:info
-          bundle exec rspec spec --format progress
+  #     - name: run rspec
+  #       run: |
+  #         # bundle exec rake elasticsearch:research:info
+  #         bundle exec rspec spec --format progress
 
 
-  e2e_survey:
-    needs: [rubocop, eslint]
-    runs-on: ubuntu-latest
+  # e2e_survey:
+  #   needs: [rubocop, eslint]
+  #   runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node: [ '10' ]
-    steps:
-      - run: echo 'e2e_survey!'
+  #   strategy:
+  #     matrix:
+  #       node: [ '10' ]
+  #   steps:
+  #     - run: echo 'e2e_survey!'
 
-  e2e_dashboard:
-    needs: [rubocop, eslint]
-    runs-on: ubuntu-latest
+  # e2e_dashboard:
+  #   needs: [rubocop, eslint]
+  #   runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node: [ '10' ]
-    steps:
-      - run: echo 'e2e_dashboard!'
+  #   strategy:
+  #     matrix:
+  #       node: [ '10' ]
+  #   steps:
+  #     - run: echo 'e2e_dashboard!'
 
-  build:
-    needs: [rspec, e2e_survey, e2e_dashboard]
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo 'deploy!'
+  # build:
+  #   needs: [rspec, e2e_survey, e2e_dashboard]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - run: echo 'deploy!'
 
-  deploy:
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo 'deploy!'
+  # deploy:
+  #   needs: [build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - run: echo 'deploy!'
