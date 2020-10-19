@@ -49,7 +49,7 @@ jobs:
         id: run_rubocop
         working-directory: ${{ env.workdir }}
         run: | 
-          bundle exec rubocop --parallel >> rubocop_out.txt
+          bundle exec rubocop --parallel > rubocop_out.txt
       
       - name: annotate Rubocop
         if: failure()
