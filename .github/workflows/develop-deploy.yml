@@ -128,16 +128,16 @@ jobs:
     if: failure()
     runs-on: ubuntu-latest
     steps:
-      name: send message
-      rub: echo failure
+      - name: send message
+        rub: echo failure
 
   linter_success_result:
     needs: [rubocop, front-lint]
     if: success()
     runs-on: ubuntu-latest
     steps:
-      name: send message
-      run: echo success
+      - name: send message
+        run: echo success
 
 
   # rspec:
