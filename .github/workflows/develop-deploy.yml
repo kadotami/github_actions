@@ -50,7 +50,7 @@ jobs:
         id: run_rubocop
         working-directory: ${{ env.workdir }}
         run: | 
-          bundle exec rubocop  $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb") --parallel > rubocop_out.txt
+          bundle exec rubocop  $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | sed 's/^${{ env.workdir }}\///g' ) --parallel > rubocop_out.txt
       
       - name: annotate Rubocop
         if: failure()
