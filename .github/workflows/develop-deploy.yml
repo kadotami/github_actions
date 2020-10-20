@@ -129,7 +129,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: send message
-        rub: echo failure
+        run: echo failure
 
   linter_success_result:
     needs: [rubocop, front-lint]
