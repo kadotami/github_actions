@@ -1,8 +1,6 @@
 on:
   pull_request:
     types: [opened, synchronize]
-env:
-  TARGET_BRANCH: ${{ github.base_ref }}
 
 jobs:
   rubocop:
@@ -14,6 +12,9 @@ jobs:
         ruby: [ '2.5.x' ]
     steps:
       - uses: actions/checkout@v1
+
+      - name: 'Fetch'
+        run: git fetch --depth 1 origin ${{ github.base_ref }}
 
       - name: Set up Ruby version
         uses: actions/setup-ruby@master
@@ -49,7 +50,7 @@ jobs:
         id: run_rubocop
         working-directory: ${{ env.workdir }}
         run: | 
-          bundle exec rubocop --parallel > rubocop_out.txt
+          bundle exec rubocop  $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb") --parallel > rubocop_out.txt
       
       - name: annotate Rubocop
         if: failure()
@@ -64,37 +65,37 @@ jobs:
           echo "::set-output name=rubocop-log::$rubocoplog"
           cat ${{ env.workdir }}/rubocop_out.txt
 
-      - name: send slack
-        if: failure()
-        uses: pullreminders/slack-action@master
-        with:
-          args: |
-            {
-              \"channel\":\"CS9TN6R9S\",
-              \"attachments\": [
-                {
-                  \"color\":\"#F32013\",
-                  \"blocks\":[
-                    {
-                      \"type\":\"header\",
-                      \"text\":{
-                        \"type\":\"plain_text\",
-                        \"text\":\"Rubocop Issue Found!: ${{ steps.annotate_rubocop.outputs.rubocop-message}}\"
-                      }
-                    },
-                    {
-                      \"type\":\"section\",
-                      \"text\":{
-                        \"type\":\"mrkdwn\",
-                        \"text\":\"PR Name: <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} @${{ github.event.pull_request.user.login }}>\n```\n${{ steps.annotate_rubocop.outputs.rubocop-log}}\n```\"
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      # - name: send slack
+      #   if: failure()
+      #   uses: pullreminders/slack-action@master
+      #   with:
+      #     args: |
+      #       {
+      #         \"channel\":\"CS9TN6R9S\",
+      #         \"attachments\": [
+      #           {
+      #             \"color\":\"#F32013\",
+      #             \"blocks\":[
+      #               {
+      #                 \"type\":\"header\",
+      #                 \"text\":{
+      #                   \"type\":\"plain_text\",
+      #                   \"text\":\"Rubocop Issue Found!: ${{ steps.annotate_rubocop.outputs.rubocop-message}}\"
+      #                 }
+      #               },
+      #               {
+      #                 \"type\":\"section\",
+      #                 \"text\":{
+      #                   \"type\":\"mrkdwn\",
+      #                   \"text\":\"PR Name: <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} @${{ github.event.pull_request.user.login }}>\n```\n${{ steps.annotate_rubocop.outputs.rubocop-log}}\n```\"
+      #                 }
+      #               }
+      #             ]
+      #           }
+      #         ]
+      #       }
+      #   env:
+      #     SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
   
   # eslint:
   #   runs-on: ubuntu-latest
