@@ -62,6 +62,9 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
           rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
+          rubocoplog="${rubocoplog//'%'/'%25'}"
+          rubocoplog="${rubocoplog//$'\n'/'%0A'}"
+          rubocoplog="${rubocoplog//$'\r'/'%0D'}"
           echo "::set-output name=rubocop-log::$rubocoplog"
           cat rubocop_out.txt
 
@@ -104,6 +107,9 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/stylelint.json"
           stylelintlog=$(cat stylelint_out.txt | sed '$d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
+          stylelintlog="${stylelintlog//'%'/'%25'}"
+          stylelintlog="${stylelintlog//$'\n'/'%0A'}"
+          stylelintlog="${stylelintlog//$'\r'/'%0D'}"
           echo "::set-output name=stylelint-log::$stylelintlog"
           cat stylelint_out.txt
 
@@ -116,7 +122,7 @@ jobs:
         id: create_message
         run: |
           error_count=$(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} )
-          message=$(cat ${{ needs.rubocop.outputs.error_log }} ${{ needs.front-lint.outputs.stylelint_error_log }} | sed '1,2d' )
+          message=$(concat ${{ needs.rubocop.outputs.error_log }} ${{ needs.front-lint.outputs.stylelint_error_log }} | sed '1,2d' )
           message="${message//'%'/'%25'}"
           message="${message//$'\n'/'%0A'}"
           message="${message//$'\r'/'%0D'}"
