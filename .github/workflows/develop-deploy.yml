@@ -122,7 +122,7 @@ jobs:
         id: create_message
         run: |
           error_count=$(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} )
-          message=$(${{ needs.rubocop.outputs.error_log }}\n${{ needs.front-lint.outputs.stylelint_error_log }} | sed '1,2d' )
+          message=$(echo '${{ needs.rubocop.outputs.error_log }}\n${{ needs.front-lint.outputs.stylelint_error_log }}' | sed '1,2d' )
           message="${message//'%'/'%25'}"
           message="${message//$'\n'/'%0A'}"
           message="${message//$'\r'/'%0D'}"
