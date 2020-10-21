@@ -121,7 +121,7 @@ jobs:
       - name: test
         run: |
           echo $(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} ) issues found!
-          echo $(cat ${{ needs.rubocop.outputs.error_log }} ${{ needs.front-lint.outputs.stylelint_error_log }} )
+          cat ${{ needs.rubocop.outputs.error_log }} ${{ needs.front-lint.outputs.stylelint_error_log }} | sed '1,2d'
       # - name: send message
       #   if: failure()
       #   uses: pullreminders/slack-action@master
