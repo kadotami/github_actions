@@ -98,14 +98,14 @@ jobs:
       - name: count error
         if: always()
         id: count_error
-        run: echo "::set-output name=stylelint-error-count::$(grep -c "^\\s+((\\d+):(\\d+))?\\s+(✖|×)\\s+(.*)\\s{3,}(.*)$" stylelint_out.txt)"
+        run: echo "::set-output name=stylelint-error-count::$(grep -c "✖" stylelint_out.txt)"
         
       - name: annotate stylelint
         if: failure()
         id: annotate_stylelint
         run: |
           echo "::add-matcher::.github/annotations/stylelint.json"
-          stylelintlog=$(cat stylelint_out.txt | sed '$d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
+          stylelintlog=$(cat stylelint_out.txt | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n & /g') 
           stylelintlog="${stylelintlog//'%'/'%25'}"
           stylelintlog="${stylelintlog//$'\n'/'%0A'}"
           stylelintlog="${stylelintlog//$'\r'/'%0D'}"
