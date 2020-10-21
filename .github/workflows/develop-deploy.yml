@@ -8,11 +8,17 @@ jobs:
     strategy:
       matrix:
         ruby: [ '2.5.x' ]
+    outputs:
+      error_count: ${{ steps.annotate_rubocop.outputs.rubocop-error-count }}
+      error_log: ${{ steps.annotate_rubocop.outputs.rubocop-log }}
     steps:
       - uses: actions/checkout@v1
 
-      - name: 'Fetch'
-        run: git fetch --depth 1 origin ${{ github.base_ref }}
+      - name: Initialize
+        run: |
+          git fetch --depth 1 origin ${{ github.base_ref }}
+          echo "::set-output name=rubocop-error-count::0"
+          echo "::set-output name=rubocop-log::''"
 
       - name: Set up Ruby version
         uses: actions/setup-ruby@master
@@ -52,7 +58,7 @@ jobs:
         id: annotate_rubocop
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
-          echo "::set-output name=rubocop-message::$(tail -n 1 rubocop_out.txt)"
+          echo "::set-output name=rubocop-error-count::$(grep -c "^.*:[0-9]\+:[0-9]\+:\s.*" rubocop_out.txt)"
           rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g'| sed '1,2d') 
           rubocoplog="${rubocoplog//'%'/'%25'}"
           rubocoplog="${rubocoplog//$'\n'/'%0A'}"
@@ -60,48 +66,22 @@ jobs:
           echo "::set-output name=rubocop-log::$rubocoplog"
           cat rubocop_out.txt
 
-      # - name: send slack
-      #   if: failure()
-      #   uses: pullreminders/slack-action@master
-      #   with:
-      #     args: |
-      #       {
-      #         \"channel\":\"CS9TN6R9S\",
-      #         \"attachments\": [
-      #           {
-      #             \"color\":\"#F32013\",
-      #             \"blocks\":[
-      #               {
-      #                 \"type\":\"header\",
-      #                 \"text\":{
-      #                   \"type\":\"plain_text\",
-      #                   \"text\":\"Rubocop Issue Found!: ${{ steps.annotate_rubocop.outputs.rubocop-message}}\"
-      #                 }
-      #               },
-      #               {
-      #                 \"type\":\"section\",
-      #                 \"text\":{
-      #                   \"type\":\"mrkdwn\",
-      #                   \"text\":\"PR Name: <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} @${{ github.event.pull_request.user.login }}>\n```\n${{ steps.annotate_rubocop.outputs.rubocop-log}}\n```\"
-      #                 }
-      #               }
-      #             ]
-      #           }
-      #         ]
-      #       }
-      #   env:
-      #     SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-  
   front-lint:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node: [ '10.x' ]
+    outputs:
+      style_error_count: ${{ steps.annotate_rubocop.outputs.stylelint-error-count }}
+      style_error_log: ${{ steps.annotate_rubocop.outputs.stylelint-log }}
     steps:
       - uses: actions/checkout@v1
 
-      - name: 'Fetch'
-        run: git fetch --depth 1 origin ${{ github.base_ref }}
+      - name: Initialize
+        run: |
+          git fetch --depth 1 origin ${{ github.base_ref }}
+          echo "::set-output name=stylelint-error-count::0"
+          echo "::set-output name=stylelint-log::''"
 
       - name: Set up node version
         uses: actions/setup-node@master
@@ -121,6 +101,12 @@ jobs:
         id: annotate_stylelint
         run: |
           echo "::add-matcher::.github/annotations/stylelint.json"
+          echo "::set-output name=stylelint-error-count::$(grep -c "^\\s+((\\d+):(\\d+))?\\s+(✖|×)\\s+(.*)\\s{3,}(.*)$" stylelint_out.txt)"
+          stylelintlog=$(cat stylelint_out.txt | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g'| sed '1,2d') 
+          stylelintlog="${stylelintlog//'%'/'%25'}"
+          stylelintlog="${stylelintlog//$'\n'/'%0A'}"
+          stylelintlog="${stylelintlog//$'\r'/'%0D'}"
+          echo "::set-output name=stylelint-log::$stylelintlog"
           cat stylelint_out.txt
 
   linter_failure_result:
@@ -128,8 +114,40 @@ jobs:
     if: failure()
     runs-on: ubuntu-latest
     steps:
-      - name: send message
-        run: echo failure
+      - name: test
+        run:
+          echo ${{ needs.rubocop.outputs.error_count + needs.front-lint.outputs.stylelint_error_count }}
+      # - name: send message
+      #   if: failure()
+      #   uses: pullreminders/slack-action@master
+      #   with:
+      #     args: |
+      #       {
+      #         \"channel\":\"CS9TN6R9S\",
+      #         \"attachments\": [
+      #           {
+      #             \"color\":\"#F32013\",
+      #             \"blocks\":[
+      #               {
+      #                 \"type\":\"header\",
+      #                 \"text\":{
+      #                   \"type\":\"plain_text\",
+      #                   \"text\":\"${{ needs.rubocop.outputs.error_count + needs.front-lint.outputs.stylelint_error_count }} Issues Found!"
+      #                 }
+      #               },
+      #               {
+      #                 \"type\":\"section\",
+      #                 \"text\":{
+      #                   \"type\":\"mrkdwn\",
+      #                   \"text\":\"PR Name: <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} @${{ github.event.pull_request.user.login }}>\n```\n${{ steps.annotate_rubocop.outputs.rubocop-log}}\n```\"
+      #                 }
+      #               }
+      #             ]
+      #           }
+      #         ]
+      #       }
+      #   env:
+      #     SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
   linter_success_result:
     needs: [rubocop, front-lint]
