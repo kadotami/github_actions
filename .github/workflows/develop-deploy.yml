@@ -72,8 +72,8 @@ jobs:
       matrix:
         node: [ '10.x' ]
     outputs:
-      stylelint_error_count: ${{ steps.annotate_rubocop.outputs.stylelint-error-count }}
-      stylelint_error_log: ${{ steps.annotate_rubocop.outputs.stylelint-log }}
+      stylelint_error_count: ${{ steps.annotate_stylelint.outputs.stylelint-error-count }}
+      stylelint_error_log: ${{ steps.annotate_stylelint.outputs.stylelint-log }}
     steps:
       - uses: actions/checkout@v1
 
