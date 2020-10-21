@@ -59,7 +59,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
           echo "::set-output name=rubocop-error-count::$(grep -c "^.*:[0-9]\+:[0-9]\+:\s.*" rubocop_out.txt)"
-          rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g'| sed '1,2d') 
+          rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
           rubocoplog="${rubocoplog//'%'/'%25'}"
           rubocoplog="${rubocoplog//$'\n'/'%0A'}"
           rubocoplog="${rubocoplog//$'\r'/'%0D'}"
@@ -102,7 +102,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/stylelint.json"
           echo "::set-output name=stylelint-error-count::$(grep -c "^\\s+((\\d+):(\\d+))?\\s+(✖|×)\\s+(.*)\\s{3,}(.*)$" stylelint_out.txt)"
-          stylelintlog=$(cat stylelint_out.txt | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g'| sed '1,2d') 
+          stylelintlog=$(cat stylelint_out.txt | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
           stylelintlog="${stylelintlog//'%'/'%25'}"
           stylelintlog="${stylelintlog//$'\n'/'%0A'}"
           stylelintlog="${stylelintlog//$'\r'/'%0D'}"
@@ -116,7 +116,7 @@ jobs:
     steps:
       - name: test
         run:
-          echo ${{ needs.rubocop.outputs.error_count + needs.front-lint.outputs.stylelint_error_count }}
+          echo $(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} ) issues found!
       # - name: send message
       #   if: failure()
       #   uses: pullreminders/slack-action@master
