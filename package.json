@@ -19,8 +19,7 @@
     "lint": "ng lint",
     "clean_install": "npm cache clean && rm -rf node_modules && npm install",
     "rebuild": "npm cache clean && rm -rf node_modules && npm install && npm run build",
-    "zip": "zip dist/archive -r dist",
-    "precommit": "lint-staged"
+    "zip": "zip dist/archive -r dist"
   },
   "lint-staged": {
     "*.{ts,md}": [
