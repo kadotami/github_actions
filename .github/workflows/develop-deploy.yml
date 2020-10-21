@@ -142,7 +142,7 @@ jobs:
                       \"type\":\"header\",
                       \"text\":{
                         \"type\":\"plain_text\",
-                        \"text\":\"${{ steps.create_message.outputs.error_count }} Issues Found!"
+                        \"text\":\"${{ steps.create_message.outputs.error_count }} Issues Found!\"
                       }
                     },
                     {
