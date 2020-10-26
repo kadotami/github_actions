@@ -55,6 +55,7 @@
     "change-case": "^3.0.1",
     "core-js": "2.4.1",
     "date-fns": "^1.29.0",
+    "eslint": "^6.8.0",
     "fingerprintjs2": "^1.8.1",
     "font-awesome": "4.7.0",
     "intl": "^1.2.5",
