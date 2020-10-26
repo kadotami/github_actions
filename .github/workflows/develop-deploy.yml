@@ -82,7 +82,7 @@ jobs:
       stylelint_error_count: ${{ steps.count_error.outputs.stylelint-error-count }}
       stylelint_error_log: ${{ steps.annotate_stylelint.outputs.stylelint-log }}
       tslint_error_count: ${{ steps.count_error.outputs.tslint-error-count }}
-      tslint_error_log: ${{ steps.annotate_stylelint.outputs.tslint-log }}
+      tslint_error_log: ${{ steps.annotate_tslint.outputs.tslint-log }}
     steps:
       - uses: actions/checkout@v1
 
@@ -123,18 +123,18 @@ jobs:
           echo "::set-output name=stylelint-log::$stylelintlog"
           cat stylelint_out.txt
 
-      - name: annotate stylelint
+      - name: annotate tslint
         if: failure()
-        id: annotate_stylelint
+        id: annotate_tslint
         run: |
           echo "::add-matcher::.github/annotations/tslint.json"
           grep -l "Error:" tslint_out.txt > tslint_out.txt
-          stylelintlog=$(cat tslint_out.txt | sed -e 's/.*\Error:/```\n```\n & /g') 
-          stylelintlog="${stylelintlog//'%'/'%25'}"
-          stylelintlog="${stylelintlog//$'\n'/'%0A'}"
-          stylelintlog="${stylelintlog//$'\r'/'%0D'}"
-          echo "::set-output name=stylelint-log::$stylelintlog"
-          cat stylelint_out.txt
+          tslintlog=$(cat tslint_out.txt | sed -e 's/.*\Error:/```\n```\n & /g') 
+          tslintlog="${tslintlog//'%'/'%25'}"
+          tslintlog="${tslintlog//$'\n'/'%0A'}"
+          tslintlog="${tslintlog//$'\r'/'%0D'}"
+          echo "::set-output name=stylelint-log::$tslintlog"
+          cat tslint_out.txt
 
   linter_failure_result:
     needs: [rubocop, front-lint]
