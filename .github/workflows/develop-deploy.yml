@@ -56,11 +56,13 @@ jobs:
       - name: count error
         if: always()
         id: count_error
+        working-directory: ${{ env.workdir }}
         run: echo "::set-output name=rubocop-error-count::$(grep -c "^.*:[0-9]\+:[0-9]\+:\s.*" rubocop_out.txt)"
 
       - name: annotate Rubocop
         if: failure()
         id: annotate_rubocop
+        working-directory: ${{ env.workdir }}
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
           rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
