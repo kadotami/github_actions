@@ -35,7 +35,7 @@ jobs:
 
       - name: bundle install
         working-directory: ${{ env.workdir }}
-        run: ｜
+        run: |
           gem install bundler
           bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
 
