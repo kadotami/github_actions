@@ -107,8 +107,9 @@ jobs:
       - name: count error
         if: always()
         id: count_error
-        run: echo "::set-output name=stylelint-error-count::$(grep -c "✖" stylelint_out.txt)"
-        run: echo "::set-output name=tslint-error-count::$(grep -c "Error:" stylelint_out.txt)"
+        run: | 
+          echo "::set-output name=stylelint-error-count::$(grep -c "✖" stylelint_out.txt)"
+          echo "::set-output name=tslint-error-count::$(grep -c "Error:" stylelint_out.txt)"
         
       - name: annotate stylelint
         if: failure()
