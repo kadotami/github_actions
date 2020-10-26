@@ -129,7 +129,7 @@ jobs:
         id: annotate_tslint
         run: |
           echo "::add-matcher::.github/annotations/tslint.json"
-          sed -i -ne "ERROR:/p" tslint_out.txt
+          sed -i -ne "/ERROR:/p" tslint_out.txt
           tslintlog=$(cat tslint_out.txt | sed -e 's/.*\ERROR:/```\n```\n & /g') 
           tslintlog="${tslintlog//'%'/'%25'}"
           tslintlog="${tslintlog//$'\n'/'%0A'}"
