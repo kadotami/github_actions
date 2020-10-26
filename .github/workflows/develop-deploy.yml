@@ -9,7 +9,7 @@ jobs:
       matrix:
         ruby: [ '2.5.x' ]
     env:
-      workdir: ./server
+      workdir: server
     outputs:
       error_count: ${{ steps.count_error.outputs.rubocop-error-count }}
       error_log: ${{ steps.annotate_rubocop.outputs.rubocop-log }}
@@ -34,7 +34,7 @@ jobs:
             ${{ runner.os }}-gem-
 
       - name: bundle install
-        working-directory: ${{ env.workdir }}
+        working-directory: ./${{ env.workdir }}
         run: |
           gem install bundler
           bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
@@ -49,20 +49,20 @@ jobs:
 
       - name: Rubocop checks
         id: run_rubocop
-        working-directory: ${{ env.workdir }}
+        working-directory: ./${{ env.workdir }}
         run: | 
-          bundle exec rubocop  $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" ) --parallel > rubocop_out.txt
+          bundle exec rubocop  $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | sed -e 's/${{ env.workdir }}\///g' ) --parallel > rubocop_out.txt
       
       - name: count error
         if: always()
         id: count_error
-        working-directory: ${{ env.workdir }}
+        working-directory: ./${{ env.workdir }}
         run: echo "::set-output name=rubocop-error-count::$(grep -c "^.*:[0-9]\+:[0-9]\+:\s.*" rubocop_out.txt)"
 
       - name: annotate Rubocop
         if: failure()
         id: annotate_rubocop
-        working-directory: ${{ env.workdir }}
+        working-directory: ./${{ env.workdir }}
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
           rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
