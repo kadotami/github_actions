@@ -162,7 +162,7 @@ jobs:
               \"channel\":\"CS9TN6R9S\",
               \"attachments\": [
                 {
-                  \"color\":\"good\",
+                  \"color\":\"#008800\",
                   \"blocks\":[
                     {
                       \"type\":\"section\",
@@ -198,7 +198,7 @@ jobs:
               \"channel\":\"CS9TN6R9S\",
               \"attachments\": [
                 {
-                  \"color\":\"good\",
+                  \"color\":\"#080\",
                   \"blocks\":[
                     {
                       \"type\":\"section\",
@@ -211,7 +211,7 @@ jobs:
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"\[${{ github.event.repository.name}}#${{ github.event.pull_request.number }}\] - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\"
+                        \"text\":\"*${{ github.event.repository.name}}#${{ github.event.pull_request.number }}* - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\"
                       }
                     }
                   ]
