@@ -53,7 +53,7 @@ jobs:
         run: | 
           touch rubocop_out.txt
           change_ruby_num=$(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | wc -l)
-          if [${change_ruby_num} -gt 0]; then bundle exec rubocop $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | sed -e 's/${{ env.workdir }}\///g' ) --parallel > rubocop_out.txt; fi
+          if [ ${change_ruby_num} -gt 0 ]; then bundle exec rubocop $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | sed -e 's/${{ env.workdir }}\///g' ) --parallel > rubocop_out.txt; fi
 
       - name: count error
         if: always()
