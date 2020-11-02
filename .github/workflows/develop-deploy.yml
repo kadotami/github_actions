@@ -51,8 +51,10 @@ jobs:
         id: run_rubocop
         working-directory: ./${{ env.workdir }}
         run: | 
-          bundle exec rubocop  $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | sed -e 's/${{ env.workdir }}\///g' ) --parallel > rubocop_out.txt
-      
+          touch rubocop_out.txt
+          change_ruby_num=$(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | wc -l)
+          if [${change_ruby_num} -gt 0]; then bundle exec rubocop $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | sed -e 's/${{ env.workdir }}\///g' ) --parallel > rubocop_out.txt; fi
+
       - name: count error
         if: always()
         id: count_error
@@ -99,11 +101,11 @@ jobs:
         run: npm install
 
       - name: stylelint checks
-        run: $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.scss") | xargs node_modules/.bin/stylelint --no-color   > stylelint_out.txt
+        run: node_modules/.bin/stylelint --no-color $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.scss")  > stylelint_out.txt
 
       - name: tslint checks
         if: always()
-        run: $(git diff origin/master HEAD --diff-filter=AM --name-only -- "*.ts") | xargs node_modules/.bin/tslint  > tslint_out.txt
+        run: node_modules/.bin/tslint $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.ts")  > tslint_out.txt
       
       - name: count error
         if: always()
