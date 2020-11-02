@@ -158,30 +158,30 @@ jobs:
         uses: pullreminders/slack-action@master
         with:
           args: |
-          {
-            \"channel\":\"CS9TN6R9S\",
-            \"attachments\": [
-              {
-                \"color\":\"good\",
-                \"blocks\":[
-                  {
-                    \"type\":\"section\",
-                    \"text\":{
-                      \"type\":\"mrkdwn\",
-                      \"text\":\"Congrats!:tada: No Issues Found!\"
+            {
+              \"channel\":\"CS9TN6R9S\",
+              \"attachments\": [
+                {
+                  \"color\":\"good\",
+                  \"blocks\":[
+                    {
+                      \"type\":\"section\",
+                      \"text\":{
+                        \"type\":\"mrkdwn\",
+                        \"text\":\"Congrats!:tada: No Issues Found!\"
+                      }
+                    },
+                    {
+                      \"type\":\"section\",
+                      \"text\":{
+                        \"type\":\"mrkdwn\",
+                        \"text\":\"\[${{ github.event.repository.name}}#${{ github.event.pull_request.number }}\] - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\"
+                      }
                     }
-                  },
-                  {
-                    \"type\":\"section\",
-                    \"text\":{
-                      \"type\":\"mrkdwn\",
-                      \"text\":\"\[${{ github.event.repository.name}}#${{ github.event.pull_request.number }}\] - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\"
-                    }
-                  }
-                ]
-              }
-            ]
-          }
+                  ]
+                }
+              ]
+            }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
