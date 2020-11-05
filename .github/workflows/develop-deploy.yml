@@ -143,9 +143,9 @@ jobs:
         id: create_message
         run: |
           error_count=$(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} + ${{ needs.front-lint.outputs.tslint_error_count }})
-          rubocoplog=$(echo '${{ needs.rubocop.outputs.error_log }}' | sed -e "s/'%0A'/\n/g")
-          stylelintlog=$(echo '${{ needs.front-lint.outputs.stylelint_error_log }}' | sed -e "s/'%0A'/\n/g")
-          tslintlog=$(echo '${{ needs.front-lint.outputs.tslint_error_log }}' | sed -e "s/'%0A'/\n/g")
+          rubocoplog=$(echo '${{ needs.rubocop.outputs.error_log }}' | sed -e "s/'%0A'/$'\n'/g")
+          stylelintlog=$(echo '${{ needs.front-lint.outputs.stylelint_error_log }}' | sed -e "s/'%0A'/$'\n'/g")
+          tslintlog=$(echo '${{ needs.front-lint.outputs.tslint_error_log }}' | sed -e "s/'%0A'/$'\n'/g")
           rubocoplog=$(echo $rubocoplog | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
           stylelintlog=$(echo $stylelintlog | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n & /g') 
           tslintlog=$(echo $tslintlog | sed -e 's/.*\ERROR:/```\n```\n & /g') 
