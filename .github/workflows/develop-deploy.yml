@@ -68,7 +68,8 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
           sed -i -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/${{ env.workdir }}\/& /g' rubocop_out.txt
-          rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
+          rubocoplog=$(cat rubocop_out.txt)
+          # rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
           rubocoplog="${rubocoplog//'%'/'%25'}"
           rubocoplog="${rubocoplog//$'\n'/'%0A'}"
           rubocoplog="${rubocoplog//$'\r'/'%0D'}"
@@ -119,7 +120,7 @@ jobs:
         id: annotate_stylelint
         run: |
           echo "::add-matcher::.github/annotations/stylelint.json"
-          stylelintlog=$(cat stylelint_out.txt | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n & /g') 
+          stylelintlog=$(cat stylelint_out.txt )
           stylelintlog="${stylelintlog//'%'/'%25'}"
           stylelintlog="${stylelintlog//$'\n'/'%0A'}"
           stylelintlog="${stylelintlog//$'\r'/'%0D'}"
@@ -132,7 +133,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/tslint.json"
           sed -i -ne "/ERROR:/p" tslint_out.txt
-          tslintlog=$(cat tslint_out.txt | sed -e 's/.*\ERROR:/```\n```\n & /g') 
+          tslintlog=$(cat tslint_out.txt)
           tslintlog="${tslintlog//'%'/'%25'}"
           tslintlog="${tslintlog//$'\n'/'%0A'}"
           tslintlog="${tslintlog//$'\r'/'%0D'}"
@@ -148,7 +149,10 @@ jobs:
         id: create_message
         run: |
           error_count=$(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} + ${{ needs.front-lint.outputs.tslint_error_count }})
-          message=$(echo '${{ needs.rubocop.outputs.error_log }}\n${{ needs.front-lint.outputs.stylelint_error_log }}\n${{ needs.front-lint.outputs.tslint_error_log }}' | sed '1,2d' )
+          rubocoplog=$(echo ${{ needs.rubocop.outputs.error_log }} | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
+          stylelintlog=$(echo ${{ needs.front-lint.outputs.stylelint_error_log }} | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n & /g') 
+          tslintlog=$(echo ${{ needs.front-lint.outputs.tslint_error_log }} | sed -e 's/.*\ERROR:/```\n```\n & /g') 
+          message=$(echo '${rubocoplog}\n${stylelintlog}\n${tslintlog}' | sed '1,2d' )
           message="${message//'%'/'%25'}"
           message="${message//$'\n'/'%0A'}"
           message="${message//$'\r'/'%0D'}"
