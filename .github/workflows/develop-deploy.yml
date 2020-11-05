@@ -208,14 +208,14 @@ jobs:
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"Congrats!:tada: No Issues Found!\"
+                        \"text\":\"*${{ steps.create_message.outputs.error_count }}* Issues Found! Let's review! :eyes:\"
                       }
                     },
                     {
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"${{ github.event.repository.name}}#${{ github.event.pull_request.number }}\] - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\"
+                        \"text\":\"PR Name: <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} @${{ github.event.pull_request.user.login }}>\n```\n${{ steps.create_message.outputs.slack_message}}\n```\"
                       }
                     }
                   ]
