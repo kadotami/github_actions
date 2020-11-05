@@ -146,7 +146,7 @@ jobs:
           rubocoplog=$(echo '${{ needs.rubocop.outputs.error_log }}')
           stylelintlog=$(echo '${{ needs.front-lint.outputs.stylelint_error_log }}')
           tslintlog=$(echo '${{ needs.front-lint.outputs.tslint_error_log }}')
-          message=$(echo $rubocoplog'\n'$stylelintlog'\n'$tslintlog | sed '1,2d' )
+          message=$(echo $rubocoplog'\n'$stylelintlog'\n'$tslintlog)
           message="${message//$'\n'/'%0A'}"
           echo "::set-output name=error_count::$error_count"
           echo "::set-output name=slack_message::$message"
