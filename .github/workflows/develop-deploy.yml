@@ -146,7 +146,10 @@ jobs:
           rubocoplog=$(echo '${{ needs.rubocop.outputs.error_log }}')
           stylelintlog=$(echo '${{ needs.front-lint.outputs.stylelint_error_log }}')
           tslintlog=$(echo '${{ needs.front-lint.outputs.tslint_error_log }}')
-          message=$(echo $rubocoplog'\n'$stylelintlog'\n'$tslintlog)
+          rubocoplog=$(echo '${{ needs.rubocop.outputs.error_log }}' | sed "//'%0A'/$'\n'" | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
+          stylelintlog=$(echo '${{ needs.front-lint.outputs.stylelint_error_log }}' | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n & /g') 
+          tslintlog=$(echo '${{ needs.front-lint.outputs.tslint_error_log }}' | sed -e 's/.*\ERROR:/```\n```\n & /g') 
+          message=$(echo $rubocoplog'\n'$stylelintlog'\n'$tslintlog | sed '1,2d' )
           message="${message//$'\n'/'%0A'}"
           echo "::set-output name=error_count::$error_count"
           echo "::set-output name=slack_message::$message"
