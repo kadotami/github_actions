@@ -143,9 +143,7 @@ jobs:
         run: |
           error_count=$(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} + ${{ needs.front-lint.outputs.tslint_error_count }})
           message=$(echo '${{ needs.rubocop.outputs.error_log }}\n${{ needs.front-lint.outputs.stylelint_error_log }}\n${{ needs.front-lint.outputs.tslint_error_log }}' | sed '1,2d' )
-          message="${message//'%'/'%25'}"
           message="${message//$'\n'/'%0A'}"
-          message="${message//$'\r'/'%0D'}"
           echo "::set-output name=error_count::$error_count"
           echo "::set-output name=slack_message::$message"
       - name: send message
@@ -156,20 +154,20 @@ jobs:
               \"channel\":\"CS9TN6R9S\",
               \"attachments\": [
                 {
-                  \"color\":\"#008800\",
+                  \"color\":\"#F32013\",
                   \"blocks\":[
                     {
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"Congrats!:tada: No Issues Found!\"
+                        \"text\":\"*${{ steps.create_message.outputs.error_count }}* Issues Found! Let's review! :eyes:\"
                       }
                     },
                     {
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"*${{ github.event.repository.name}}#${{ github.event.pull_request.number }}* - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\"
+                        \"text\":\"*${{ github.event.repository.name}}#${{ github.event.pull_request.number }}* - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\n```\n${{ steps.create_message.outputs.slack_message}}\n```\"
                       }
                     }
                   ]
