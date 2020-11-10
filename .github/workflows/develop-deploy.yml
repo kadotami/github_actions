@@ -68,8 +68,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
           sed -i -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/${{ env.workdir }}\/& /g' rubocop_out.txt
-          rubocoplog=$(cat rubocop_out.txt)
-          # rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
+          rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
           rubocoplog="${rubocoplog//$'\n'/'%0A'}"
           echo "::set-output name=rubocop-log::$rubocoplog"
           cat rubocop_out.txt
@@ -118,7 +117,7 @@ jobs:
         id: annotate_stylelint
         run: |
           echo "::add-matcher::.github/annotations/stylelint.json"
-          stylelintlog=$(cat stylelint_out.txt )
+          stylelintlog=$(cat stylelint_out.txt | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n & /g') 
           stylelintlog="${stylelintlog//$'\n'/'%0A'}"
           echo "::set-output name=stylelint-log::$stylelintlog"
           cat stylelint_out.txt
@@ -129,7 +128,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/tslint.json"
           sed -i -ne "/ERROR:/p" tslint_out.txt
-          tslintlog=$(cat tslint_out.txt)
+          tslintlog=$(cat tslint_out.txt | sed -e 's/.*\ERROR:/```\n```\n & /g') 
           tslintlog="${tslintlog//$'\n'/'%0A'}"
           echo "::set-output name=tslint-log::$tslintlog"
           cat tslint_out.txt
@@ -143,14 +142,10 @@ jobs:
         id: create_message
         run: |
           error_count=$(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} + ${{ needs.front-lint.outputs.tslint_error_count }})
-          rubocoplog=$(echo '${{ needs.rubocop.outputs.error_log }}' | sed -e "s/'%0A'/$'\n'/g")
-          stylelintlog=$(echo '${{ needs.front-lint.outputs.stylelint_error_log }}' | sed -e "s/'%0A'/$'\n'/g")
-          tslintlog=$(echo '${{ needs.front-lint.outputs.tslint_error_log }}' | sed -e "s/'%0A'/$'\n'/g")
-          rubocoplog=$(echo $rubocoplog | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g') 
-          stylelintlog=$(echo $stylelintlog | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n & /g') 
-          tslintlog=$(echo $tslintlog | sed -e 's/.*\ERROR:/```\n```\n & /g') 
-          message=$(echo $rubocoplog'\n'$stylelintlog'\n'$tslintlog | sed '1,2d' )
+          message=$(echo '${{ needs.rubocop.outputs.error_log }}\n${{ needs.front-lint.outputs.stylelint_error_log }}\n${{ needs.front-lint.outputs.tslint_error_log }}' | sed '1,2d' )
+          message="${message//'%'/'%25'}"
           message="${message//$'\n'/'%0A'}"
+          message="${message//$'\r'/'%0D'}"
           echo "::set-output name=error_count::$error_count"
           echo "::set-output name=slack_message::$message"
       - name: send message
@@ -167,14 +162,14 @@ jobs:
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"*${{ steps.create_message.outputs.error_count }}* Issues Found! Let's review! :eyes:\"
+                        \"text\":\"Congrats!:tada: No Issues Found!\"
                       }
                     },
                     {
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"PR Name: <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} @${{ github.event.pull_request.user.login }}>\n```\n${{ steps.create_message.outputs.slack_message}}\n```\"
+                        \"text\":\"*${{ github.event.repository.name}}#${{ github.event.pull_request.number }}* - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\"
                       }
                     }
                   ]
@@ -221,48 +216,55 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         
 
-  # rspec:
-  #   needs: [rubocop, front-lint]
-  #   if: success()
-  #   runs-on: ubuntu-latest
+  rspec:
+    needs: [rubocop, front-lint]
+    if: success()
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: password
 
-  #   strategy:
-  #     matrix:
-  #       ruby: [ '2.5.x' ]
-  #   env:
-  #     workdir: server
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #     - name: Set up Ruby version
-  #       uses: actions/setup-ruby@master
-  #       with:
-  #         ruby-version : ${{ matrix.ruby }}
+    strategy:
+      matrix:
+        ruby: [ '2.5.x' ]
+    env:
+      workdir: server
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Ruby version
+        uses: actions/setup-ruby@master
+        with:
+          ruby-version : ${{ matrix.ruby }}
 
-  #     - name: Cache gems
-  #       uses: actions/cache@v1
-  #       with:
-  #         path: vendor/bundle
-  #         key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-gem-
+      - name: Cache gems
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gem-
 
-  #     - name: bundle install
-  #       run: |
-  #         gem install bundler
-  #         bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
+      - name: bundle install
+        run: |
+          gem install bundler
+          bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
 
-  #     - name: Setup Database
-  #       run: |
-  #         bundle exec rake db:create
-  #         bundle exec rake db:schema:load
-  #         bundle exec rake db:seed_fu
-  #       env:
-  #         RAILS_ENV: test
+      - name: Setup Database
+        run: |
+          bundle exec rake db:create
+          bundle exec rake db:schema:load
+          bundle exec rake db:seed_fu
+        env:
+          RAILS_ENV: test
 
-  #     - name: run rspec
-  #       run: |
-  #         # bundle exec rake elasticsearch:research:info
-  #         bundle exec rspec spec --format progress
+      - name: run rspec
+        run: |
+          # bundle exec rake elasticsearch:research:info
+          bundle exec rspec spec --format progress
 
 
   # e2e_survey:
