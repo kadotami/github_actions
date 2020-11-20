@@ -127,7 +127,7 @@ jobs:
         id: annotate_eslint
         run: |
           echo "::add-matcher::.github/annotations/eslint.json"
-          eslintlog=$(cat eslint_out.txt | sed '$d' | sed -e 's/.*\.[js|ts]/```\n```\n & /g') 
+          eslintlog=$(cat eslint_out.txt | sed '/^$/d' | sed '$d' | sed -e 's/.*\.[js\\n|ts\\n]/```\n```\n & /g') 
           eslintlog="${eslintlog//$'\n'/'%0A'}"
           echo "::set-output name=eslint-log::$eslintlog"
           cat eslint_out.txt
