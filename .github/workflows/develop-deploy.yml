@@ -173,7 +173,7 @@ jobs:
                       \"type\":\"section\",
                       \"text\":{
                         \"type\":\"mrkdwn\",
-                        \"text\":\"< https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} | build #${{ github.run_number }} >. Test Failed! Let's review! :eyes:\"
+                        \"text\":\"<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}| build #${{ github.run_number }}> Test Failed! Let's review! :eyes:\"
                       }
                     }
                   ]
