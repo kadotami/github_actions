@@ -168,6 +168,13 @@ jobs:
                         \"type\":\"mrkdwn\",
                         \"text\":\"*${{ github.event.repository.name}}#${{ github.event.pull_request.number }}* - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\n```\n${{ steps.create_message.outputs.slack_message}}\n```\"
                       }
+                    },
+                    {
+                      \"type\":\"section\",
+                      \"text\":{
+                        \"type\":\"mrkdwn\",
+                        \"text\":\"< https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} | build \#$GITHUB_RUN_NUMBER >. Test Failed! Let's review! :eyes:\"
+                      }
                     }
                   ]
                 }
@@ -224,18 +231,28 @@ jobs:
           - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: password
-
+      redis:
+        image: redis:5.0-alpine
+        ports:
+          - 6379:6379
+        env:
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
     strategy:
       matrix:
         ruby: [ '2.5.x' ]
-    env:
-      workdir: server
+        node: [ '10.x' ]
     steps:
       - uses: actions/checkout@v1
       - name: Set up Ruby version
         uses: actions/setup-ruby@master
         with:
           ruby-version : ${{ matrix.ruby }}
+
+      - name: Set up node version
+        uses: actions/setup-node@master
+        with:
+          node-version : ${{ matrix.node }}
 
       - name: Cache gems
         uses: actions/cache@v1

@@ -1,0 +1,5 @@
+/Users/mondamin/Documents/github_actions/dashboard/index.ts
+  0:0  error  Parsing error: File '/users/mondamin/documents/github_actions/tsconfig.json' not found
+
+✖ 1 problem (1 error, 0 warnings)
+
