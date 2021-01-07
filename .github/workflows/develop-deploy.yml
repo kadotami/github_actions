@@ -73,6 +73,7 @@ jobs:
           rubocoplog="${rubocoplog//$'\n'/'%0A'}"
           echo "::set-output name=rubocop-log::$rubocoplog"
           cat rubocop_out.txt
+          exit 1
 
   front-lint:
     runs-on: ubuntu-latest
@@ -123,6 +124,7 @@ jobs:
           stylelintlog="${stylelintlog//$'\n'/'%0A'}"
           echo "::set-output name=stylelint-log::$stylelintlog"
           cat stylelint_out.txt
+          if [ ${{steps.count_error.outputs.stylelint-error-count}} -gt 0 ]; then exit 1; fi
 
       - name: annotate eslint
         if: failure()
@@ -130,10 +132,11 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/eslint.json"
           eslintlog=$(cat eslint_out.txt | sed '/^$/d' | sed '$d' | sed -e 's/.*\.ts$/```\n```\n&/g' | sed '1,1d') 
-          if [ ${{steps.count_error.outputs.stylelint-error-count}} -gt 0 ]; then eslintlog="$eslintlog\n\`\`\`"; fi
+          if [ ${{steps.count_error.outputs.eslint-error-count}} -gt 0 ]; then eslintlog="$eslintlog\n\`\`\`"; fi
           eslintlog="${eslintlog//$'\n'/'%0A'}"
           echo "::set-output name=eslint-log::$eslintlog"
           cat eslint_out.txt
+          if [ ${{steps.count_error.outputs.eslint-error-count}} -gt 0 ]; then exit 1; fi
 
   linter_failure_result:
     needs: [rubocop, front-lint]
