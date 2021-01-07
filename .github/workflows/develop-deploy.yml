@@ -146,6 +146,9 @@ jobs:
           error_count=$(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} + ${{ needs.front-lint.outputs.eslint_error_count }})
           message=$(echo '${{ needs.rubocop.outputs.error_log }}\n${{ needs.front-lint.outputs.stylelint_error_log }}\n${{ needs.front-lint.outputs.eslint_error_log }}' )
           message="${message//$'\n'/'%0A'}"
+          message_length=$(echo ${message} | wc -m)
+          if [ ${message_length} -gt 2000 ]; then message="Sorry, can not send details, because too many issues faund.\n Please check build logs"; fi
+          message="Sorry, can not send details, so too many issues faund.\n Please check build logs";
           echo "::set-output name=error_count::$error_count"
           echo "::set-output name=slack_message::$message"
       - name: send message
