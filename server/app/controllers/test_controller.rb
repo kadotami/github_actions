@@ -8,5 +8,6 @@ class TestController < ApplicationControler
 
   def edit
     a = 'test'
+    a
   end
 end
