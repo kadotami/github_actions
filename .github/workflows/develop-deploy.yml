@@ -144,7 +144,7 @@ jobs:
         id: create_message
         run: |
           error_count=$(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} + ${{ needs.front-lint.outputs.eslint_error_count }})
-          message=$(echo '${{ needs.rubocop.outputs.error_log }}\nabcde${{ needs.front-lint.outputs.stylelint_error_log }}\nabcde${{ needs.front-lint.outputs.eslint_error_log }}' )
+          message=$(echo '${{ needs.rubocop.outputs.error_log }}\n${{ needs.front-lint.outputs.stylelint_error_log }}\n${{ needs.front-lint.outputs.eslint_error_log }}' )
           message="${message//$'\n'/'%0A'}"
           echo "::set-output name=error_count::$error_count"
           echo "::set-output name=slack_message::$message"
