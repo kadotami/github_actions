@@ -119,7 +119,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/stylelint.json"
           stylelintlog=$(cat stylelint_out.txt | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n&/g' | sed '1,2d') 
-          stylelintlog="$stylelintlog\n\`\`\`"
+          if [ ${{steps.count_error.outputs.stylelint-error-count}} -gt 0 ]; stylelintlog="$stylelintlog\n\`\`\`"; fi
           stylelintlog="${stylelintlog//$'\n'/'%0A'}"
           echo "::set-output name=stylelint-log::$stylelintlog"
           cat stylelint_out.txt
@@ -130,7 +130,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/eslint.json"
           eslintlog=$(cat eslint_out.txt | sed '/^$/d' | sed '$d' | sed -e 's/.*\.ts$/```\n```\n&/g' | sed '1,1d') 
-          eslintlog="$eslintlog\n\`\`\`"
+          if [ ${{steps.count_error.outputs.stylelint-error-count}} -gt 0 ]; eslintlog="$eslintlog\n\`\`\`"; fi
           eslintlog="${eslintlog//$'\n'/'%0A'}"
           echo "::set-output name=eslint-log::$eslintlog"
           cat eslint_out.txt
