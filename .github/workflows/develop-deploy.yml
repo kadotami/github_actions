@@ -68,7 +68,8 @@ jobs:
         run: |
           echo "::add-matcher::.github/annotations/rubocop.json"
           sed -i -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/${{ env.workdir }}\/& /g' rubocop_out.txt
-          rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g' | sed '1,1d' | sed -e 's/.*/&\n```\n/g') 
+          rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g' | sed '1,1d') 
+          rubocoplog="$rubocoplog\n\`\`\`"
           rubocoplog="${rubocoplog//$'\n'/'%0A'}"
           echo "::set-output name=rubocop-log::$rubocoplog"
           cat rubocop_out.txt
@@ -117,7 +118,8 @@ jobs:
         id: annotate_stylelint
         run: |
           echo "::add-matcher::.github/annotations/stylelint.json"
-          stylelintlog=$(cat stylelint_out.txt | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n&/g' | sed '1,1d' | sed -e 's/.*/&\n```\n/g') 
+          stylelintlog=$(cat stylelint_out.txt | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n&/g' | sed '1,1d') 
+          stylelintlog="$stylelintlog\n\`\`\`"
           stylelintlog="${stylelintlog//$'\n'/'%0A'}"
           echo "::set-output name=stylelint-log::$stylelintlog"
           cat stylelint_out.txt
@@ -127,7 +129,8 @@ jobs:
         id: annotate_eslint
         run: |
           echo "::add-matcher::.github/annotations/eslint.json"
-          eslintlog=$(cat eslint_out.txt | sed '/^$/d' | sed '$d' | sed -e 's/.*\.ts$/```\n```\n&/g' | sed '1,1d' | sed -e 's/.*/&\n```\n/g') 
+          eslintlog=$(cat eslint_out.txt | sed '/^$/d' | sed '$d' | sed -e 's/.*\.ts$/```\n```\n&/g' | sed '1,1d') 
+          eslintlog="$eslintlog\n\`\`\`"
           eslintlog="${eslintlog//$'\n'/'%0A'}"
           echo "::set-output name=eslint-log::$eslintlog"
           cat eslint_out.txt
