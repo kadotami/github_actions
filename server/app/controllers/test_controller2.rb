@@ -7,6 +7,7 @@ class TestController2 < ApplicationControler
   end
 
   def edit
-    a = ['q', '3']
+    a = 'aaa'
+    a
   end
 end
