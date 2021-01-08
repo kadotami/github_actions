@@ -1,4 +1,4 @@
-class TestController < ApplicationControler
+class TestController2 < ApplicationControler
   def index
     a = %w[a b]
     b = [:x, :y]
@@ -7,7 +7,7 @@ class TestController < ApplicationControler
   end
 
   def edit
-    a = 'test'
+    a = 'aaa'
     a
   end
 end

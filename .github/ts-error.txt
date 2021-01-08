@@ -1,0 +1,7 @@
+
+ERROR: dashboard/index.ts:2:30 - missing whitespace
+ERROR: dashboard/index.ts:2:30 - unnecessary semicolon
+ERROR: dashboard/index.ts:7:17 - missing whitespace
+ERROR: dashboard/index.ts:8:23 - missing whitespace
+ERROR: dashboard/index.ts:8:23 - unnecessary semicolon
+
