@@ -1,6 +1,8 @@
 on:
   pull_request:
     types: [opened, synchronize]
+  branches-ignore:
+    - not_run/**
 
 jobs:
   rubocop:
