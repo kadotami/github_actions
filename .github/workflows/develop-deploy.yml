@@ -2,7 +2,7 @@ on:
   pull_request:
     types: [opened, synchronize]
     branches-ignore:
-      - not_run/**
+      - not_run/test
 
 jobs:
   rubocop:
