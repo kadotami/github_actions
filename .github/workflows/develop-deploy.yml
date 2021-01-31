@@ -4,7 +4,7 @@ on:
 
 jobs:
   rubocop:
-    if: !contains(github.ref, "not_run")
+    if: "! contains(github.ref, 'not_run') "
     runs-on: ubuntu-latest
     strategy:
       matrix:
