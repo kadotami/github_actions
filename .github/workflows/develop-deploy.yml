@@ -4,6 +4,7 @@ on:
 
 jobs:
   rubocop:
+    if: "! contains(github.head_ref, 'not_run/') "
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -18,6 +19,7 @@ jobs:
 
       - name: fetch base branch
         run: |
+          echo ${{github.head_ref}}
           git fetch --depth 1 origin ${{ github.base_ref }}
 
       - name: Set up Ruby version
