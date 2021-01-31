@@ -19,6 +19,7 @@ jobs:
 
       - name: fetch base branch
         run: |
+          echo ${{github.ref}}
           git fetch --depth 1 origin ${{ github.base_ref }}
 
       - name: Set up Ruby version
