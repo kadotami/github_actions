@@ -1,293 +1,320 @@
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, closed]
 
 jobs:
-  rubocop:
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        ruby: [ '2.5.x' ]
-    env:
-      workdir: server
-    outputs:
-      error_count: ${{ steps.count_error.outputs.rubocop-error-count }}
-      error_log: ${{ steps.annotate_rubocop.outputs.rubocop-log }}
     steps:
-      - uses: actions/checkout@v1
-
-      - name: fetch base branch
-        run: |
-          git fetch --depth 1 origin ${{ github.base_ref }}
-
-      - name: Set up Ruby version
-        uses: actions/setup-ruby@master
+      - name: checkout
+        if: github.event.pull_request.merged == true
+        uses: actions/checkout@v2
         with:
-          ruby-version : ${{ matrix.ruby }}
+          ref: ${{github.event.pull_request.base.ref}}
 
-      - name: Cache gems
-        uses: actions/cache@v1
+      - name: checkout
+        if: github.event.pull_request.merged == false
+        uses: actions/checkout@v2
         with:
-          path: ${{ env.workdir }}/vendor/bundle
-          key: ${{ runner.os }}-gem-${{ hashFiles('Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gem-
+          ref: ${{github.event.pull_request.head.ref}}
 
-      - name: bundle install
-        working-directory: ./${{ env.workdir }}
+      - name: test
+        if: github.event.pull_request.merged == true
         run: |
-          gem install bundler
-          bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
+          echo ${{github.event.pull_request.base.ref}}
+          git symbolic-ref --quiet --short HEAD
 
-      - name: Cache rubocop
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/rubocop_cache
-          key: ${{ runner.os }}-rubocop-${{ github.head_ref }}
-          restore-keys: |
-            ${{ runner.os }}-rubocop-
-
-      - name: Rubocop checks
-        id: run_rubocop
-        working-directory: ./${{ env.workdir }}
-        run: | 
-          touch rubocop_out.txt
-          change_ruby_num=$(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | wc -l)
-          if [ ${change_ruby_num} -gt 0 ]; then bundle exec rubocop $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | sed -e 's/${{ env.workdir }}\///g' ) --parallel > rubocop_out.txt; fi
-
-      - name: count error
-        if: always()
-        id: count_error
-        working-directory: ./${{ env.workdir }}
-        run: echo "::set-output name=rubocop-error-count::$(grep -c "^.*:[0-9]\+:[0-9]\+:\s.*" rubocop_out.txt)"
-
-      - name: annotate Rubocop
-        if: failure()
-        id: annotate_rubocop
-        working-directory: ./${{ env.workdir }}
+      - name: test
+        if: github.event.pull_request.merged == false
         run: |
-          echo "::add-matcher::.github/annotations/rubocop.json"
-          sed -i -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/${{ env.workdir }}\/& /g' rubocop_out.txt
-          rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g' | sed '1,1d') 
-          rubocoplog="$rubocoplog\n\`\`\`"
-          rubocoplog="${rubocoplog//$'\n'/'%0A'}"
-          echo "::set-output name=rubocop-log::$rubocoplog"
-          cat rubocop_out.txt
-          exit 1
+          echo ${{github.event.pull_request.head.ref}}
+          git symbolic-ref --quiet --short HEAD
 
-  front-lint:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: [ '10.x' ]
-    outputs:
-      stylelint_error_count: ${{ steps.count_error.outputs.stylelint-error-count }}
-      stylelint_error_log: ${{ steps.annotate_stylelint.outputs.stylelint-log }}
-      eslint_error_count: ${{ steps.count_error.outputs.eslint-error-count }}
-      eslint_error_log: ${{ steps.annotate_eslint.outputs.eslint-log }}
-    steps:
-      - uses: actions/checkout@v1
+  # rubocop:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       ruby: [ '2.5.x' ]
+  #   env:
+  #     workdir: server
+  #   outputs:
+  #     error_count: ${{ steps.count_error.outputs.rubocop-error-count }}
+  #     error_log: ${{ steps.annotate_rubocop.outputs.rubocop-log }}
+  #   steps:
+  #     - uses: actions/checkout@v1
 
-      - name: fetch base branch
-        run: |
-          git fetch --depth 1 origin ${{ github.base_ref }}
+  #     - name: fetch base branch
+  #       run: |
+  #         git fetch --depth 1 origin ${{ github.base_ref }}
 
-      - name: Set up node version
-        uses: actions/setup-node@master
-        with:
-          node-version : ${{ matrix.node }}
+  #     - name: Set up Ruby version
+  #       uses: actions/setup-ruby@master
+  #       with:
+  #         ruby-version : ${{ matrix.ruby }}
 
-      - name: npm install
-        run: npm install
+  #     - name: Cache gems
+  #       uses: actions/cache@v1
+  #       with:
+  #         path: ${{ env.workdir }}/vendor/bundle
+  #         key: ${{ runner.os }}-gem-${{ hashFiles('Gemfile.lock') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-gem-
 
-      - name: stylelint checks
-        run: node_modules/.bin/stylelint --no-color $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.scss")  > stylelint_out.txt
+  #     - name: bundle install
+  #       working-directory: ./${{ env.workdir }}
+  #       run: |
+  #         gem install bundler
+  #         bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
 
-      - name: eslint checks
-        if: always()
-        run: node_modules/.bin/eslint $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.ts")  > eslint_out.txt
+  #     - name: Cache rubocop
+  #       uses: actions/cache@v1
+  #       with:
+  #         path: ~/.cache/rubocop_cache
+  #         key: ${{ runner.os }}-rubocop-${{ github.head_ref }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-rubocop-
+
+  #     - name: Rubocop checks
+  #       id: run_rubocop
+  #       working-directory: ./${{ env.workdir }}
+  #       run: | 
+  #         touch rubocop_out.txt
+  #         change_ruby_num=$(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | wc -l)
+  #         if [ ${change_ruby_num} -gt 0 ]; then bundle exec rubocop $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.rb" | sed -e 's/${{ env.workdir }}\///g' ) --parallel > rubocop_out.txt; fi
+
+  #     - name: count error
+  #       if: always()
+  #       id: count_error
+  #       working-directory: ./${{ env.workdir }}
+  #       run: echo "::set-output name=rubocop-error-count::$(grep -c "^.*:[0-9]\+:[0-9]\+:\s.*" rubocop_out.txt)"
+
+  #     - name: annotate Rubocop
+  #       if: failure()
+  #       id: annotate_rubocop
+  #       working-directory: ./${{ env.workdir }}
+  #       run: |
+  #         echo "::add-matcher::.github/annotations/rubocop.json"
+  #         sed -i -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/${{ env.workdir }}\/& /g' rubocop_out.txt
+  #         rubocoplog=$(cat rubocop_out.txt | sed '1,5d' | sed '$d' | sed '/^$/d' | sed -e 's/^.*:[0-9]\+:[0-9]\+:\s.*/```\n```\n & /g' | sed '1,1d') 
+  #         rubocoplog="$rubocoplog\n\`\`\`"
+  #         rubocoplog="${rubocoplog//$'\n'/'%0A'}"
+  #         echo "::set-output name=rubocop-log::$rubocoplog"
+  #         cat rubocop_out.txt
+  #         exit 1
+
+  # front-lint:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node: [ '10.x' ]
+  #   outputs:
+  #     stylelint_error_count: ${{ steps.count_error.outputs.stylelint-error-count }}
+  #     stylelint_error_log: ${{ steps.annotate_stylelint.outputs.stylelint-log }}
+  #     eslint_error_count: ${{ steps.count_error.outputs.eslint-error-count }}
+  #     eslint_error_log: ${{ steps.annotate_eslint.outputs.eslint-log }}
+  #   steps:
+  #     - uses: actions/checkout@v1
+
+  #     - name: fetch base branch
+  #       run: |
+  #         git fetch --depth 1 origin ${{ github.base_ref }}
+
+  #     - name: Set up node version
+  #       uses: actions/setup-node@master
+  #       with:
+  #         node-version : ${{ matrix.node }}
+
+  #     - name: npm install
+  #       run: npm install
+
+  #     - name: stylelint checks
+  #       run: node_modules/.bin/stylelint --no-color $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.scss")  > stylelint_out.txt
+
+  #     - name: eslint checks
+  #       if: always()
+  #       run: node_modules/.bin/eslint $(git diff origin/${{ github.base_ref }} HEAD --diff-filter=AM --name-only -- "*.ts")  > eslint_out.txt
       
-      - name: count error
-        if: always()
-        id: count_error
-        run: | 
-          echo "::set-output name=stylelint-error-count::$(grep -c "✖" stylelint_out.txt)"
-          echo "::set-output name=eslint-error-count::$(grep -c "error:" eslint_out.txt)"
+  #     - name: count error
+  #       if: always()
+  #       id: count_error
+  #       run: | 
+  #         echo "::set-output name=stylelint-error-count::$(grep -c "✖" stylelint_out.txt)"
+  #         echo "::set-output name=eslint-error-count::$(grep -c "error:" eslint_out.txt)"
         
-      - name: annotate stylelint
-        if: failure()
-        id: annotate_stylelint
-        run: |
-          echo "::add-matcher::.github/annotations/stylelint.json"
-          stylelintlog=$(cat stylelint_out.txt | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n&/g' | sed '1,2d') 
-          if [ ${{steps.count_error.outputs.stylelint-error-count}} -gt 0 ]; then stylelintlog="$stylelintlog\n\`\`\`"; fi
-          stylelintlog="${stylelintlog//$'\n'/'%0A'}"
-          echo "::set-output name=stylelint-log::$stylelintlog"
-          cat stylelint_out.txt
-          if [ ${{steps.count_error.outputs.stylelint-error-count}} -gt 0 ]; then exit 1; fi
+  #     - name: annotate stylelint
+  #       if: failure()
+  #       id: annotate_stylelint
+  #       run: |
+  #         echo "::add-matcher::.github/annotations/stylelint.json"
+  #         stylelintlog=$(cat stylelint_out.txt | sed '$d' | sed -e 's/.*\.[scss|css]/```\n```\n&/g' | sed '1,2d') 
+  #         if [ ${{steps.count_error.outputs.stylelint-error-count}} -gt 0 ]; then stylelintlog="$stylelintlog\n\`\`\`"; fi
+  #         stylelintlog="${stylelintlog//$'\n'/'%0A'}"
+  #         echo "::set-output name=stylelint-log::$stylelintlog"
+  #         cat stylelint_out.txt
+  #         if [ ${{steps.count_error.outputs.stylelint-error-count}} -gt 0 ]; then exit 1; fi
 
-      - name: annotate eslint
-        if: failure()
-        id: annotate_eslint
-        run: |
-          echo "::add-matcher::.github/annotations/eslint.json"
-          eslintlog=$(cat eslint_out.txt | sed '/^$/d' | sed '$d' | sed -e 's/.*\.ts$/```\n```\n&/g' | sed '1,1d') 
-          if [ ${{steps.count_error.outputs.eslint-error-count}} -gt 0 ]; then eslintlog="$eslintlog\n\`\`\`"; fi
-          eslintlog="${eslintlog//$'\n'/'%0A'}"
-          echo "::set-output name=eslint-log::$eslintlog"
-          cat eslint_out.txt
-          if [ ${{steps.count_error.outputs.eslint-error-count}} -gt 0 ]; then exit 1; fi
+  #     - name: annotate eslint
+  #       if: failure()
+  #       id: annotate_eslint
+  #       run: |
+  #         echo "::add-matcher::.github/annotations/eslint.json"
+  #         eslintlog=$(cat eslint_out.txt | sed '/^$/d' | sed '$d' | sed -e 's/.*\.ts$/```\n```\n&/g' | sed '1,1d') 
+  #         if [ ${{steps.count_error.outputs.eslint-error-count}} -gt 0 ]; then eslintlog="$eslintlog\n\`\`\`"; fi
+  #         eslintlog="${eslintlog//$'\n'/'%0A'}"
+  #         echo "::set-output name=eslint-log::$eslintlog"
+  #         cat eslint_out.txt
+  #         if [ ${{steps.count_error.outputs.eslint-error-count}} -gt 0 ]; then exit 1; fi
 
-  linter_failure_result:
-    needs: [rubocop, front-lint]
-    if: failure()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create Slack Message
-        id: create_message
-        run: |
-          error_count=$(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} + ${{ needs.front-lint.outputs.eslint_error_count }})
-          message=$(echo '${{ needs.rubocop.outputs.error_log }}\n${{ needs.front-lint.outputs.stylelint_error_log }}\n${{ needs.front-lint.outputs.eslint_error_log }}' )
-          message="${message//$'\n'/'%0A'}"
-          message_length=$(echo ${message} | wc -m)
-          echo $message_length
-          if [ ${message_length} -gt 4 ]; then message="\`\`\`\nSorry, can not send details, because too many issues faund.\nPlease check build logs\n\`\`\`"; fi
-          echo "::set-output name=error_count::$error_count"
-          echo "::set-output name=slack_message::$message"
-      - name: send message
-        uses: pullreminders/slack-action@master
-        with:
-          args: |
-            {
-              \"channel\":\"CS9TN6R9S\",
-              \"attachments\": [
-                {
-                  \"color\":\"#F32013\",
-                  \"blocks\":[
-                    {
-                      \"type\":\"section\",
-                      \"text\":{
-                        \"type\":\"mrkdwn\",
-                        \"text\":\"*${{ steps.create_message.outputs.error_count }}* Issues Found! Let's review! :eyes:\"
-                      }
-                    },
-                    {
-                      \"type\":\"section\",
-                      \"text\":{
-                        \"type\":\"mrkdwn\",
-                        \"text\":\"*${{ github.event.repository.name}}#${{ github.event.pull_request.number }}* - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\n${{ steps.create_message.outputs.slack_message}}\"
-                      }
-                    },
-                    {
-                      \"type\":\"section\",
-                      \"text\":{
-                        \"type\":\"mrkdwn\",
-                        \"text\":\"<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}| build #${{ github.run_number }}> Test Failed! Let's review! :eyes:\"
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+  # linter_failure_result:
+  #   needs: [rubocop, front-lint]
+  #   if: failure()
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Create Slack Message
+  #       id: create_message
+  #       run: |
+  #         error_count=$(expr ${{ needs.rubocop.outputs.error_count }} + ${{ needs.front-lint.outputs.stylelint_error_count }} + ${{ needs.front-lint.outputs.eslint_error_count }})
+  #         message=$(echo '${{ needs.rubocop.outputs.error_log }}\n${{ needs.front-lint.outputs.stylelint_error_log }}\n${{ needs.front-lint.outputs.eslint_error_log }}' )
+  #         message="${message//$'\n'/'%0A'}"
+  #         message_length=$(echo ${message} | wc -m)
+  #         echo $message_length
+  #         if [ ${message_length} -gt 4 ]; then message="\`\`\`\nSorry, can not send details, because too many issues faund.\nPlease check build logs\n\`\`\`"; fi
+  #         echo "::set-output name=error_count::$error_count"
+  #         echo "::set-output name=slack_message::$message"
+  #     - name: send message
+  #       uses: pullreminders/slack-action@master
+  #       with:
+  #         args: |
+  #           {
+  #             \"channel\":\"CS9TN6R9S\",
+  #             \"attachments\": [
+  #               {
+  #                 \"color\":\"#F32013\",
+  #                 \"blocks\":[
+  #                   {
+  #                     \"type\":\"section\",
+  #                     \"text\":{
+  #                       \"type\":\"mrkdwn\",
+  #                       \"text\":\"*${{ steps.create_message.outputs.error_count }}* Issues Found! Let's review! :eyes:\"
+  #                     }
+  #                   },
+  #                   {
+  #                     \"type\":\"section\",
+  #                     \"text\":{
+  #                       \"type\":\"mrkdwn\",
+  #                       \"text\":\"*${{ github.event.repository.name}}#${{ github.event.pull_request.number }}* - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\n${{ steps.create_message.outputs.slack_message}}\"
+  #                     }
+  #                   },
+  #                   {
+  #                     \"type\":\"section\",
+  #                     \"text\":{
+  #                       \"type\":\"mrkdwn\",
+  #                       \"text\":\"<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}| build #${{ github.run_number }}> Test Failed! Let's review! :eyes:\"
+  #                     }
+  #                   }
+  #                 ]
+  #               }
+  #             ]
+  #           }
+  #       env:
+  #         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-  linter_success_result:
-    needs: [rubocop, front-lint]
-    if: success()
-    runs-on: ubuntu-latest
-    steps:
-      - name: send message
-        uses: pullreminders/slack-action@master
-        with:
-          args: |
-            {
-              \"channel\":\"CS9TN6R9S\",
-              \"attachments\": [
-                {
-                  \"color\":\"#080\",
-                  \"blocks\":[
-                    {
-                      \"type\":\"section\",
-                      \"text\":{
-                        \"type\":\"mrkdwn\",
-                        \"text\":\"Congrats!:tada: No Issues Found!\"
-                      }
-                    },
-                    {
-                      \"type\":\"section\",
-                      \"text\":{
-                        \"type\":\"mrkdwn\",
-                        \"text\":\"${{ github.event.repository.name}}#${{ github.event.pull_request.number }}\] - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\"
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+  # linter_success_result:
+  #   needs: [rubocop, front-lint]
+  #   if: success()
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: send message
+  #       uses: pullreminders/slack-action@master
+  #       with:
+  #         args: |
+  #           {
+  #             \"channel\":\"CS9TN6R9S\",
+  #             \"attachments\": [
+  #               {
+  #                 \"color\":\"#080\",
+  #                 \"blocks\":[
+  #                   {
+  #                     \"type\":\"section\",
+  #                     \"text\":{
+  #                       \"type\":\"mrkdwn\",
+  #                       \"text\":\"Congrats!:tada: No Issues Found!\"
+  #                     }
+  #                   },
+  #                   {
+  #                     \"type\":\"section\",
+  #                     \"text\":{
+  #                       \"type\":\"mrkdwn\",
+  #                       \"text\":\"${{ github.event.repository.name}}#${{ github.event.pull_request.number }}\] - <${{ github.event.pull_request.html_url }}| ${{ github.event.pull_request.title }} by ${{ github.event.pull_request.user.login }}>\"
+  #                     }
+  #                   }
+  #                 ]
+  #               }
+  #             ]
+  #           }
+  #       env:
+  #         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         
 
-  rspec:
-    needs: [rubocop, front-lint]
-    if: success()
-    runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:5.7
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: password
-      redis:
-        image: redis:5.0-alpine
-        ports:
-          - 6379:6379
-        env:
-          REDIS_HOST: 127.0.0.1
-          REDIS_PORT: 6379
-    strategy:
-      matrix:
-        ruby: [ '2.5.x' ]
-        node: [ '10.x' ]
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up Ruby version
-        uses: actions/setup-ruby@master
-        with:
-          ruby-version : ${{ matrix.ruby }}
+  # rspec:
+  #   needs: [rubocop, front-lint]
+  #   if: success()
+  #   runs-on: ubuntu-latest
+  #   services:
+  #     mysql:
+  #       image: mysql:5.7
+  #       ports:
+  #         - 3306:3306
+  #       env:
+  #         MYSQL_ROOT_PASSWORD: password
+  #     redis:
+  #       image: redis:5.0-alpine
+  #       ports:
+  #         - 6379:6379
+  #       env:
+  #         REDIS_HOST: 127.0.0.1
+  #         REDIS_PORT: 6379
+  #   strategy:
+  #     matrix:
+  #       ruby: [ '2.5.x' ]
+  #       node: [ '10.x' ]
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - name: Set up Ruby version
+  #       uses: actions/setup-ruby@master
+  #       with:
+  #         ruby-version : ${{ matrix.ruby }}
 
-      - name: Set up node version
-        uses: actions/setup-node@master
-        with:
-          node-version : ${{ matrix.node }}
+  #     - name: Set up node version
+  #       uses: actions/setup-node@master
+  #       with:
+  #         node-version : ${{ matrix.node }}
 
-      - name: Cache gems
-        uses: actions/cache@v1
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gem-
+  #     - name: Cache gems
+  #       uses: actions/cache@v1
+  #       with:
+  #         path: vendor/bundle
+  #         key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-gem-
 
-      - name: bundle install
-        run: |
-          gem install bundler
-          bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
+  #     - name: bundle install
+  #       run: |
+  #         gem install bundler
+  #         bundle install --path vendor/bundle --quiet --jobs 4 --retry 3
 
-      - name: Setup Database
-        run: |
-          bundle exec rake db:create
-          bundle exec rake db:schema:load
-          bundle exec rake db:seed_fu
-        env:
-          RAILS_ENV: test
+  #     - name: Setup Database
+  #       run: |
+  #         bundle exec rake db:create
+  #         bundle exec rake db:schema:load
+  #         bundle exec rake db:seed_fu
+  #       env:
+  #         RAILS_ENV: test
 
-      - name: run rspec
-        run: |
-          # bundle exec rake elasticsearch:research:info
-          bundle exec rspec spec --format progress
+  #     - name: run rspec
+  #       run: |
+  #         # bundle exec rake elasticsearch:research:info
+  #         bundle exec rspec spec --format progress
 
 
   # e2e_survey:
