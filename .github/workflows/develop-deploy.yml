@@ -29,6 +29,11 @@ jobs:
         run: |
           echo ${{github.event.pull_request.head.ref}}
           git symbolic-ref --quiet --short HEAD
+      
+      - name: master
+        if: github.event.pull_request.merged == true && ${{github.event.pull_request.base.ref}} == 'main'
+        run: |
+          echo 'aaaaaaaaaaaaaaaaaaaaaaaa' 
 
   # rubocop:
   #   runs-on: ubuntu-latest
