@@ -18,6 +18,11 @@ jobs:
         with:
           ref: ${{github.event.pull_request.head.ref}}
 
+      - name: Runs Elasticsearch
+        uses: elastic/elastic-github-actions/elasticsearch@master
+        with:
+          stack-version: 6.2.2
+
       - name: test
         if: github.event.pull_request.merged == true
         run: |
